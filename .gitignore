@@ -1,0 +1,5 @@
+_Build/
+test/out
+node_modules/
+.haxelib/
+out/

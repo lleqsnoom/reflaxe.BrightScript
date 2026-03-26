@@ -1,0 +1,5 @@
+-D reflaxe_runtime
+--macro nullSafety("brscompiler")
+-lib reflaxe
+-cp src
+brscompiler

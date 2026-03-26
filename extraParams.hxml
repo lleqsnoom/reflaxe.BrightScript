@@ -1,0 +1,4 @@
+-D brs
+-D brightscript
+--macro nullSafety("brscompiler")
+--macro brscompiler.BRSCompilerInit.Start()

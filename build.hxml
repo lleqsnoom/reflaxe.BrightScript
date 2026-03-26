@@ -1,0 +1,6 @@
+-cp sample
+-cp std/brs/_std
+-main Main
+-lib brightscript
+-D brightscript-output=out/amalgam.brs
+-D brs_runtime

@@ -1,0 +1,20 @@
+{
+  "name": "reflaxe.brightscript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "brs": "brs",
+    "test": "npm run brs out/amalgam.brs",
+    "build:brs": "haxelib run reflaxe build",
+    "build": "haxe build.hxml"
+  },
+  "author": "",
+  "license": "ISC",
+  "haxeDependencies": {
+    "reflaxe": "3.0.0"
+  },
+  "devDependencies": {
+    "@rokucommunity/brs": "^0.47.1"
+  }
+}
