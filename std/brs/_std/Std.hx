@@ -31,14 +31,14 @@ extern class Std {
 }
 
 @:keep @:brs_global function __DynToStr__(a:Dynamic) {
-	final dynType = untyped __brs__('Type({0})', a);
+	final dynType = brs.Native.typeOf(a);
 
 	return switch dynType {
 		case 'roString': a;
 		case 'roInt': untyped __brs__('Str({0})', a);
 		case 'roFloat': untyped __brs__('Str({0})', a);
 		case 'roDouble': untyped __brs__('Str({0})', a);
-		case 'roBoolean': untyped __brs__('Str({0})', a);
+		case 'roBoolean': untyped __brs__('{0}.ToStr()', a);
 		case 'roArray':
 			untyped __brs__('
 			s = ""
@@ -52,7 +52,17 @@ extern class Std {
 			end for', a, ', ');
 			'[${untyped __brs__("s")}]';
 
-		// case 'roAssociativeArray': untyped __brs__('Str({0})', a);
+		case 'roAssociativeArray':
+			untyped __brs__('
+			s = "{"
+			keys = {0}.Keys()
+			for i = 0 to keys.Count() - 1
+				if i > 0 then s = s + ", "
+				s = s + keys[i] + ": " + __DynToStr__({0}[keys[i]])
+			end for
+			s = s + "}"', a);
+			'[${untyped __brs__("s")}]';
+		case 'Function': '[Function]';
 		case _: 'NOT_IMPLEMENTED__DynToStr__($dynType)';
 	}
 }

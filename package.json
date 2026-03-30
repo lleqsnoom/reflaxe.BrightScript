@@ -6,7 +6,7 @@
   "scripts": {
     "brs": "brs",
     "test": "npm run brs out/amalgam.brs",
-    "build:brs": "haxelib run reflaxe build",
+    "build:brs": "rm -rf _Build && haxe build.hxml",
     "build": "haxe build.hxml"
   },
   "author": "",

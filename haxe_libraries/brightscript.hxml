@@ -1,0 +1,6 @@
+# local dev
+# @install: lix --silent download "haxelib:/reflaxe#3.0.0" into reflaxe/3.0.0/haxelib
+-lib reflaxe
+-cp src/
+-D brightscript=0.0.1
+--macro brscompiler.BRSCompilerInit.Start()

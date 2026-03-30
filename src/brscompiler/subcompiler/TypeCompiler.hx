@@ -33,7 +33,7 @@ class TypeCompiler {
 		'Bool' => 'Boolean'
 	];
 
-	final primitives = ['String', 'Int', 'Float', 'Bool'];
+	final primitives = ['String', 'Int', 'Float', 'Boolean'];
 
 	public function new(main:brscompiler.BRSCompiler) {
 		this.main = main;
@@ -44,7 +44,6 @@ class TypeCompiler {
 	}
 
 	function compileModuleType(m:ModuleType):String {
-		// trace("compileModuleType: " + m);
 		return switch (m) {
 			case TClassDecl(clsRef): {
 					compileClassName(clsRef.get());
@@ -62,9 +61,12 @@ class TypeCompiler {
 		}
 	}
 
-	public function compileAbstractType(type:Type, errorPos:Position, absRef:haxe.macro.Ref<haxe.macro.AbstractType>, params:Array<haxe.macro.Type>) {
+	public function compileAbstractType(type:Type, errorPos:Position, absRef:haxe.macro.Ref<haxe.macro.AbstractType>, params:Array<haxe.macro.Type>):String {
 		final abs = absRef.get();
-
+		// Null<T> must compile to Object so BRS accepts invalid values
+		if (abs.name == "Null") {
+			return "Object";
+		}
 		final primitiveResult = if (params.length == 0) {
 			switch (abs.name) {
 				case "String": "String";
@@ -82,18 +84,16 @@ class TypeCompiler {
 			return primitiveResult;
 		}
 		final absType = abs.type;
+
 		final internalType = #if macro {
-			// trace("applyTypeParameters: " + absType + ", " + abs.params + ", " + params);
 			TypeTools.applyTypeParameters(absType, abs.params, params);
 		} #else absType #end;
-		// // If Null<T>, must be Variant since built-in types cannot be assigned `null`.
 		if (internalType.isNull()) {
 			return null;
 		}
 
 		// Prevent recursion...
 		if (!internalType.equals(type)) {
-			trace(compileType(internalType, errorPos));
 			return compileType(internalType, errorPos);
 		}
 		return null;
@@ -104,7 +104,7 @@ class TypeCompiler {
 	}
 
 	public function compileType(type:Type, errorPos:Position):Null<String> {
-		final returnType = switch type {
+		final returnType:String = switch type {
 			case TAbstract(absRef, params): compileAbstractType(type, errorPos, absRef, params);
 			case TInst(clsRef, _): compileModuleType(TClassDecl(clsRef));
 			case TDynamic(_): 'Object';

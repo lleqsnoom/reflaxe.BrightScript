@@ -27,7 +27,7 @@ class BRSCompilerInit {
 				}),
 				RemoveTemporaryVariables(OnlyAvoidTemporaryFieldAccess),
 				PreventRepeatVariables({}),
-				WrapLambdaCaptureVariablesInArray,
+				WrapLambdaCaptureVariablesInArray({}),
 				RemoveSingleExpressionBlocks,
 				RemoveConstantBoolIfs,
 				RemoveUnnecessaryBlocks,
@@ -41,7 +41,6 @@ class BRSCompilerInit {
 			// fileOutputType: FilePerClass,
 			reservedVarNames: reservedNames(),
 			targetCodeInjectionName: "__brs__",
-			smartDCE: true,
 			trackUsedTypes: true,
 
 			ignoreTypes: ["haxe.iterators.ArrayIterator"],
@@ -49,7 +48,7 @@ class BRSCompilerInit {
 	}
 
 	static function reservedNames() {
-		return [];
+		return ["pos", "end", "stop", "tab", "line", "next", "step"];
 	}
 }
 #end

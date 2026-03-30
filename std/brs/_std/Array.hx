@@ -20,14 +20,21 @@ extern class Array<T> {
 	@:runtime inline public function join(sep:String):String {
 		var result:String = "";
 		final len = length;
-		for (i in 0...len) {
-			result += Std.string(get(i)) + (i == len - 1 ? "" : sep);
+		var i = 0;
+		while (i < len) {
+			if (i > 0)
+				result += sep;
+			result += Std.string(get(i));
+			i++;
 		}
 		return result;
 	}
 
 	@:nativeFunctionCode("{this}[{arg0}]")
 	private function get(index:Int):T;
+
+	@:nativeFunctionCode("{this}[{arg0}] = {arg1}")
+	private function setAt(index:Int, x:T):Void;
 
 	@:nativeFunctionCode("{this}.Pop()")
 	public function pop():Null<T>;
@@ -38,11 +45,13 @@ extern class Array<T> {
 	@:runtime inline public function reverse():Void {
 		final len = length;
 		final half = Std.int(len / 2);
-		for (i in 0...half) {
+		var i = 0;
+		while (i < half) {
 			final j = len - i - 1;
 			final temp = get(i);
-			gdInsert(i, get(j));
-			gdInsert(j, temp);
+			setAt(i, get(j));
+			setAt(j, temp);
+			i++;
 		}
 	}
 
@@ -51,73 +60,145 @@ extern class Array<T> {
 
 	@:runtime inline public function slice(pos:Int, end:Int = 2147483647):Array<T> {
 		final result = [];
-		if (pos < 0)
-			pos = 0;
-		if (end < 0)
-			end = 0;
-		if (end > length)
-			end = length;
-		for (i in pos...end)
+		var sI = pos;
+		var eI = end;
+		if (sI < 0)
+			sI = length + sI;
+		if (sI < 0)
+			sI = 0;
+		if (eI < 0)
+			eI = length + eI;
+		if (eI < 0)
+			eI = 0;
+		if (eI > length)
+			eI = length;
+		var i = sI;
+		while (i < eI) {
 			result.push(get(i));
+			i++;
+		}
 		return result;
 	}
 
 	@:runtime public inline function sort(f:(T, T) -> Int):Void {
-		sortCustom(function(a, b) return f(a, b) < 0);
+		final cmp = f;
+		var n = length;
+		while (n > 1) {
+			var i = 0;
+			while (i < n - 1) {
+				if (cmp(get(i), get(i + 1)) > 0) {
+					var temp = get(i);
+					setAt(i, get(i + 1));
+					setAt(i + 1, temp);
+				}
+				i++;
+			}
+			n--;
+		}
 	}
-
-	@:nativeFunctionCode("-------sort_custom")
-	private function sortCustom(f:(T, T) -> Bool):Void;
 
 	@:runtime public inline function splice(pos:Int, len:Int):Array<T> {
 		final result = [];
-		if (pos < 0)
-			pos = 0;
-		var i = pos + len - 1;
+		var sI = pos;
+		if (sI < 0)
+			sI = length + sI;
+		if (sI < 0)
+			sI = 0;
+		var i = sI + len - 1;
 		if (i >= length)
 			i = length - 1;
-		while (i >= pos) {
-			result.push(get(pos));
-			removeAt(pos);
+		while (i >= sI) {
+			result.push(get(sI));
+			removeAt(sI);
 			i--;
 		}
 		return result;
 	}
 
-	@:nativeFunctionCode("-------remove_at")
+	@:nativeFunctionCode("{this}.Delete({arg0})")
 	private function removeAt(pos:Int):Void;
 
 	@:nativeFunctionCode("str({this})")
 	public function toString():String;
 
-	@:nativeFunctionCode("-------push_front")
+	@:nativeFunctionCode("{this}.Unshift({arg0})")
 	public function unshift(x:T):Void;
 
-	@:nativeFunctionCode("-------insert")
-	private function gdInsert(pos:Int, x:T):Void;
-
 	@:runtime public inline function insert(pos:Int, x:T):Void {
-		return (pos < 0) ? gdInsert(length + 1 + pos, x) : gdInsert(pos, x);
-	}
-
-	@:runtime public inline function remove(x:T):Bool {
-		final index = indexOf(x);
-		return if (index >= 0) {
-			removeAt(index);
-			true;
+		var p = pos;
+		if (p < 0) {
+			p = length + p;
+			if (p < 0)
+				p = 0;
+		}
+		if (p >= length) {
+			push(x);
 		} else {
-			false;
+			push(get(length - 1));
+			var i = length - 2;
+			while (i > p) {
+				setAt(i, get(i - 1));
+				i--;
+			}
+			setAt(p, x);
 		}
 	}
 
-	@:nativeFunctionCode("-------has")
-	@:pure public function contains(x:T):Bool;
+	@:runtime public inline function remove(x:T):Bool {
+		var idx = indexOf(x);
+		var removed = false;
+		if (idx >= 0) {
+			removeAt(idx);
+			removed = true;
+		}
+		return removed;
+	}
 
-	@:nativeFunctionCode("-------find")
-	public function indexOf(x:T, fromIndex:Int = 0):Int;
+	@:runtime public inline function contains(x:T):Bool {
+		var found = false;
+		var i = 0;
+		while (i < length) {
+			if (get(i) == x)
+				found = true;
+			i++;
+		}
+		return found;
+	}
 
-	@:nativeFunctionCode("-------rfind")
-	public function lastIndexOf(x:T, fromIndex:Int = -1):Int;
+	@:runtime public inline function indexOf(x:T, fromIndex:Int = 0):Int {
+		var i = fromIndex;
+		if (i < 0) {
+			i = length + i;
+			if (i < 0)
+				i = 0;
+		}
+		var result = -1;
+		while (i < length) {
+			if (get(i) == x) {
+				result = i;
+				i = length;
+			}
+			i++;
+		}
+		return result;
+	}
+
+	@:runtime public inline function lastIndexOf(x:T, fromIndex:Int = -1):Int {
+		var i = fromIndex;
+		if (i < 0)
+			i = length + i;
+		if (i >= length)
+			i = length - 1;
+		var result = -1;
+		while (i >= 0) {
+			if (get(i) == x) {
+				result = i;
+				i = -1;
+			}
+			i--;
+		}
+		return result;
+	}
 
 	@:runtime public inline function copy():Array<T> {
 		return [for (v in this) v];
@@ -143,11 +224,15 @@ extern class Array<T> {
 		final temp = f;
 		final result = [];
 		for (v in this)
-			if (temp(v))
+			if (temp(v) == true)
 				result.push(v);
 		return result;
 	}
 
-	@:nativeFunctionCode("-------resize")
-	public function resize(len:Int):Void;
+	@:runtime public inline function resize(len:Int):Void {
+		while (length > len)
+			pop();
+		while (length < len)
+			push(cast null);
+	}
 }

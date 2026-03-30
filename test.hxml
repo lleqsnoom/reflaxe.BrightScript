@@ -1,0 +1,8 @@
+-cp test
+-cp std/brs/_std
+-main Main
+-lib brightscript
+-lib utest
+-D travis
+-D brightscript-output=out/test_amalgam.brs
+-D brs_runtime

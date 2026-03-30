@@ -1,35 +1,92 @@
 package;
 
-/**
-	Your target needs to provide custom implementations of every Haxe API class.
-	How this is achieved is different for each target, so be sure to research and try different methods!
-
-	To help you get started, this String.hx was provided.
-	But you'll need to handle the rest from here!
-
-	This file is based on the cross implementation for String:
-	https://github.com/HaxeFoundation/haxe/blob/development/std/String.hx
-
-	-- Examples --
-	JavaScript  https://github.com/HaxeFoundation/haxe/tree/development/std/js/_std/String.hx
-	Hashlink    https://github.com/HaxeFoundation/haxe/blob/development/std/hl/_std/String.hx
-	Python      https://github.com/HaxeFoundation/haxe/blob/development/std/python/_std/String.hx
-**/
 extern class String {
+	@:nativeFunctionCode("{this}.Len()")
 	var length(default, null):Int;
 
+	@:nativeFunctionCode("{arg0}")
 	function new(string:String):Void;
 
+	@:nativeFunctionCode("UCase({this})")
 	function toUpperCase():String;
+
+	@:nativeFunctionCode("LCase({this})")
 	function toLowerCase():String;
+
+	@:nativeFunctionCode("Mid({this}, {arg0} + 1, 1)")
 	function charAt(index:Int):String;
+
+	@:nativeFunctionCode("Asc(Mid({this}, {arg0} + 1, 1))")
 	function charCodeAt(index:Int):Null<Int>;
-	function indexOf(str:String, ?startIndex:Int):Int;
-	function lastIndexOf(str:String, ?startIndex:Int):Int;
+
+	@:runtime public inline function indexOf(str:String, ?startIndex:Int):Int {
+		var sI = 0;
+		if (startIndex != null)
+			sI = startIndex;
+		return brsInstr(sI + 1, str) - 1;
+	}
+
+	@:nativeFunctionCode("Instr({arg0}, {this}, {arg1})")
+	private function brsInstr(startPos:Int, substr:String):Int;
+
+	@:runtime public inline function lastIndexOf(str:String, ?startIndex:Int):Int {
+		var searchLen = brsLen(str);
+		var maxI = brsLength() - searchLen;
+		if (startIndex != null) {
+			if (startIndex < maxI)
+				maxI = startIndex;
+		}
+		var found = -1;
+		var i = 0;
+		while (i <= maxI) {
+			if (brsInstr(i + 1, str) == i + 1) {
+				found = i;
+			}
+			i++;
+		}
+		return found;
+	}
+
+	@:nativeFunctionCode("{this}.Len()")
+	private function brsLength():Int;
+
+	@:nativeFunctionCode("{arg0}.Len()")
+	private function brsLen(s:String):Int;
+
+	@:nativeFunctionCode("{this}.Split({arg0})")
 	function split(delimiter:String):Array<String>;
-	function substr(pos:Int, ?len:Int):String;
-	function substring(startIndex:Int, ?endIndex:Int):String;
+
+	@:runtime public inline function substr(startIndex:Int, ?len:Int):String {
+		var count = brsLength() - startIndex;
+		if (len != null)
+			count = len;
+		return brsMid(startIndex + 1, count);
+	}
+
+	@:runtime public inline function substring(startIndex:Int, ?endIndex:Int):String {
+		var sI = startIndex;
+		var eI = brsLength();
+		if (endIndex != null)
+			eI = endIndex;
+		if (sI > eI) {
+			var tmp = sI;
+			sI = eI;
+			eI = tmp;
+		}
+		if (sI < 0)
+			sI = 0;
+		return brsMid(sI + 1, eI - sI);
+	}
+
+	@:nativeFunctionCode("Mid({this}, {arg0}, {arg1})")
+	private function brsMid(startPos:Int, count:Int):String;
+
+	@:nativeFunctionCode("Mid({this}, {arg0})")
+	private function brsMidFrom(startPos:Int):String;
+
+	@:nativeFunctionCode("{this}")
 	function toString():String;
 
+	@:nativeFunctionCode("Chr({arg0})")
 	@:pure static function fromCharCode(code:Int):String;
 }

@@ -3,141 +3,117 @@ package;
 using Std;
 
 class Main {
-	static final STATIC_ARR:Array<Int> = [];
-	static var STATIC_COUNTER = 0;
-
-	final arr:Array<Int> = [];
-	var counter = 0;
+	// Assert fields
+	var _passed:Int = 0;
+	var _failed:Int = 0;
+	var _section:String = "";
 
 	public static function main() {
-		new Main("Hello world!", 1, false, 0.5);
+		new Main();
 	}
 
-	public function new(msg:String, i:Int, b:Bool, f:Float) {
-		trace('---- checkForIn ----');
-		checkForIn();
-		trace('---- checkFor ----');
-		checkFor();
-		trace('---- checkForShort ----');
-		checkForShort();
-		trace('---- checkFloatToInt ----');
-		checkFloatToInt();
-		trace('---- checkArray ----');
-		checkArray();
-		trace('---- checkVars ----');
-		checkVars();
-		trace('---- checkStatics ----');
-		checkStatics();
-		trace('---- checkStatics ----');
-		checkEnum();
-		trace('---- checkAbstractEnum ----');
-		checkAbstractEnum();
-		trace('---- checkArrow ----');
-		checkArrow();
-		trace('---- checkTryCatch ----');
-		checkTryCatch();
-		trace('---- checkQuickrray ----');
-		checkQuickrray();
-		trace('---- checkStringsEscape ----');
-		checkStringsEscape();
-		trace(msg);
+	public function new() {
+		new LanguageTests(this).run();
+		new ArrayTests(this).run();
+		new StringTests(this).run();
+		new MathTests(this).run();
+		new StringBufTests(this).run();
+		new StringToolsTests(this).run();
+		new MapTests(this).run();
+		new DateTests(this).run();
+		new DateToolsTests(this).run();
+		new ERegTests(this).run();
+		new ReflectTests(this).run();
+		new TypeTests(this).run();
+		new LambdaTests(this).run();
+		new ListTests(this).run();
+		new XmlTests(this).run();
+		new ExceptionTests(this).run();
+		new JsonTests(this).run();
+		new JsonPrinterTests(this).run();
+		new BytesTests(this).run();
+		new TimerTests(this).run();
+		new SerializerTests(this).run();
+		new HttpTests(this).run();
+		new CryptoTests(this).run();
+		new CallStackTests(this).run();
+		new MetaTests(this).run();
+		new SysTests(this).run();
+		report();
 	}
 
-	function checkStringsEscape() {
-		var str = "Hello\nWorld";
-		trace('str: $str');
+	// --- Assert helpers ---
+
+	public function section(name:String):Void {
+		_section = name;
+		trace("---- " + name + " ----");
 	}
 
-	function checkForIn() {
-		var arr = [1, 2, 3];
-		for (i in arr) {
-			trace('i: $i');
+	public function isTrue(actual:Dynamic, msg:String):Void {
+		if (actual == true)
+			_passed++;
+		else {
+			_failed++;
+			trace("[FAIL] " + _section + " > " + msg);
 		}
 	}
 
-	function checkTryCatch() {
-		try {
-			throw 'Error';
-		} catch (e:Dynamic) {
-			trace('Error: $e');
+	public function isFalse(actual:Dynamic, msg:String):Void {
+		if (actual == false)
+			_passed++;
+		else {
+			_failed++;
+			trace("[FAIL] " + _section + " > " + msg + " (expected false)");
 		}
 	}
 
-	function checkEnum() {
-		var color:Colors = null;
-		color = Red;
-		switch color {
-			case Red:
-				trace('Color: red');
-			case Green:
-				trace('Color: green');
-			case Blue:
-				trace('Color: blue');
+	public function stringEquals(expected:String, actual:String, msg:String):Void {
+		if (expected == actual)
+			_passed++;
+		else {
+			_failed++;
+			trace("[FAIL] " + _section + " > " + msg + " | expected: '" + expected + "' | got: '" + actual + "'");
 		}
 	}
 
-	function checkAbstractEnum() {
-		var colorValue:ColorValues = Blue;
-		trace('colorValue: $colorValue');
-	}
-
-	function checkArray() {
-		final threeStepIntArray = [1, 2, 3, 4];
-		trace('threeStepIntArray: ' + threeStepIntArray.length);
-		final threeStepStrArray = new Array<String>();
-		threeStepStrArray.push("A");
-		threeStepStrArray.push("B");
-		threeStepStrArray.push("C");
-		trace('Int: ' + 1);
-		trace('Float: ' + 1.1);
-		trace('Bool: ' + true);
-		trace('String: ' + 'Hello');
-		trace('arr: $threeStepStrArray');
-		return 10;
-	}
-
-	function checkArrow() {
-		final arrow = (x:Int) -> 'your int is: $x';
-		trace('arrow(1): ' + arrow(1));
-	}
-
-	function checkStatics() {
-		STATIC_COUNTER++;
-		STATIC_ARR.push(100);
-		trace('STATIC_COUNTER: $STATIC_COUNTER, STATIC_ARR: $STATIC_ARR');
-	}
-
-	function checkVars() {
-		counter++;
-		arr.push(1);
-		trace('counter: $counter, arr: $arr');
-	}
-
-	function checkFloatToInt() {
-		var f = 1.9;
-		var i = f.int();
-		trace("i: " + i);
-	}
-
-	function checkFor() {
-		var fori = 0;
-		for (i in 0...200) {
-			fori++;
+	public function intEquals(expected:Int, actual:Int, msg:String):Void {
+		if (expected == actual)
+			_passed++;
+		else {
+			_failed++;
+			trace("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
 		}
-		trace("fori: " + fori);
 	}
 
-	function checkForShort() {
-		var fori = 0;
-		for (i in 0...3) {
-			fori++;
+	public function floatNear(expected:Float, actual:Float, msg:String):Void {
+		var diff = expected - actual;
+		if (diff < 0)
+			diff = -diff;
+		if (diff < 0.001)
+			_passed++;
+		else {
+			_failed++;
+			trace("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
 		}
-		trace("fori: " + fori);
 	}
 
-	function checkQuickrray() {
-		final quickArr = [for (i in 0...1) i];
-		trace("quickArr: " + quickArr);
+	public function report():Void {
+		var total = _passed + _failed;
+		trace("==========================================");
+		trace("TEST RESULTS: " + _passed + "/" + total + " passed");
+		if (_failed > 0)
+			trace("FAILURES: " + _failed);
+		else
+			trace("ALL TESTS PASSED");
+		trace("==========================================");
+	}
+}
+
+class MapKey {
+	public var id:Int;
+
+	public function new(val:Int) {
+		this.id = val;
 	}
 }
 
