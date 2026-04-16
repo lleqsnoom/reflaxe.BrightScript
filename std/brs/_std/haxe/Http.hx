@@ -50,7 +50,7 @@ private extern class BrsHttp {
 	return untyped __brs__('__h');
 }
 
-@:keep @:brs_global function __Http_setHeader__(self:Dynamic, name:Dynamic, value:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_setHeader__(self:Dynamic, name:Dynamic, value:Dynamic):Void {
 	untyped __brs__('
 		__h_found = false
 		for __h_i = 0 to {0}.headers.Count() - 1
@@ -64,15 +64,15 @@ private extern class BrsHttp {
 			{0}.headers.Push({"name": {1}, "value": {2}})
 		end if
 	', self, name, value);
-	return untyped __brs__('invalid !31!');
+	// return untyped __brs__('invalid !31!');
 }
 
-@:keep @:brs_global function __Http_addHeader__(self:Dynamic, name:Dynamic, value:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_addHeader__(self:Dynamic, name:Dynamic, value:Dynamic):Void {
 	untyped __brs__('{0}.headers.Push({"name": {1}, "value": {2}})', self, name, value);
-	return untyped __brs__('invalid !32!');
+	// return untyped __brs__('invalid !32!');
 }
 
-@:keep @:brs_global function __Http_setParameter__(self:Dynamic, name:Dynamic, value:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_setParameter__(self:Dynamic, name:Dynamic, value:Dynamic):Void {
 	untyped __brs__('
 		__h_found = false
 		for __h_i = 0 to {0}.params.Count() - 1
@@ -86,20 +86,20 @@ private extern class BrsHttp {
 			{0}.params.Push({"name": {1}, "value": {2}})
 		end if
 	', self, name, value);
-	return untyped __brs__('invalid !33!');
+	// return untyped __brs__('invalid !33!');
 }
 
-@:keep @:brs_global function __Http_addParameter__(self:Dynamic, name:Dynamic, value:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_addParameter__(self:Dynamic, name:Dynamic, value:Dynamic):Void {
 	untyped __brs__('{0}.params.Push({"name": {1}, "value": {2}})', self, name, value);
-	return untyped __brs__('invalid !34!');
+	// return untyped __brs__('invalid !34!');
 }
 
-@:keep @:brs_global function __Http_setPostData__(self:Dynamic, data:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_setPostData__(self:Dynamic, data:Dynamic):Void {
 	brs.Native.fieldSet(self, "postData", data);
-	return untyped __brs__('invalid !35!');
+	// return untyped __brs__('invalid !35!');
 }
 
-@:keep @:brs_global function __Http_request__(self:Dynamic, post:Dynamic):Dynamic {
+@:keep @:brs_global function __Http_request__(self:Dynamic, post:Dynamic):Void {
 	untyped __brs__('
 		__h_url = {0}.url
 		if {0}.params.Count() > 0 then
@@ -153,7 +153,7 @@ private extern class BrsHttp {
 			end if
 		end if
 	', self, post);
-	return untyped __brs__('invalid !36!');
+	// return untyped __brs__('invalid !36!');
 }
 
 @:keep @:brs_global function __Http_requestUrl__(url:Dynamic):Dynamic {

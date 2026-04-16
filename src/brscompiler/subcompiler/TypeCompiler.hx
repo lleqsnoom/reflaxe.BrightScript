@@ -119,7 +119,10 @@ class TypeCompiler {
 
 			case _: null;
 		}
-
+		if(returnType == "Void") {
+			//TODO: Void is not propper return type. We need to replace function with sub that has no return value.
+			return returnType;
+		}
 		return isTypePrimitive(returnType) ? returnType : 'Object';
 	}
 }

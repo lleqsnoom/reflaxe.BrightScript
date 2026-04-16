@@ -163,19 +163,22 @@ extern class Xml {
 	if (has == true) {
 		return brs.Native.fieldGet(attrs, att);
 	}
-	return untyped __brs__('invalid !15!');
+	return null;
+	// return untyped __brs__('invalid !15!');
 }
 
 @:keep @:brs_global function __Xml_set__(self:Dynamic, att:String, value:String):Dynamic {
 	var attrs:Dynamic = brs.Native.fieldGet(self, "attrs");
 	brs.Native.fieldSet(attrs, att, value);
-	return untyped __brs__('invalid !16!');
+	return value;
+	// return untyped __brs__('invalid !16!');
 }
 
 @:keep @:brs_global function __Xml_remove__(self:Dynamic, att:String):Dynamic {
 	var attrs:Dynamic = brs.Native.fieldGet(self, "attrs");
 	untyped __brs__('{0}.Delete({1})', attrs, att);
-	return untyped __brs__('invalid !17!');
+	return att;
+	// return untyped __brs__('invalid !17!');
 }
 
 @:keep @:brs_global function __Xml_exists__(self:Dynamic, att:String):Dynamic {
@@ -260,7 +263,8 @@ extern class Xml {
 @:keep @:brs_global function __Xml_firstChild__(self:Dynamic):Dynamic {
 	var children:Dynamic = brs.Native.fieldGet(self, "children");
 	if (brs.Native.count(children) == 0)
-		return untyped __brs__('invalid !18!');
+		return null;
+		// return untyped __brs__('invalid !18!');
 	return brs.Native.arrayGet(children, 0);
 }
 
@@ -275,12 +279,13 @@ extern class Xml {
 			return child;
 		i = i + 1;
 	}
-	return untyped __brs__('invalid !19!');
+	return null;
+	// return untyped __brs__('invalid !19!');
 }
 
 // --- Tree manipulation ---
 
-@:keep @:brs_global function __Xml_addChild__(self:Dynamic, x:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_addChild__(self:Dynamic, x:Dynamic):Void {
 	// Remove from old parent
 	var oldParent:Dynamic = brs.Native.fieldGet(x, "parent");
 	untyped __brs__('if {0} <> invalid then __Xml_removeChild__({0}, {1})', oldParent, x);
@@ -288,7 +293,8 @@ extern class Xml {
 	var children:Dynamic = brs.Native.fieldGet(self, "children");
 	brs.Native.push(children, x);
 	brs.Native.fieldSet(x, "parent", self);
-	return untyped __brs__('invalid !20!');
+	// return untyped __brs__(x);
+	// return untyped __brs__('invalid !20!');
 }
 
 @:keep @:brs_global function __Xml_removeChild__(self:Dynamic, x:Dynamic):Dynamic {
@@ -301,7 +307,7 @@ extern class Xml {
 		var cid:Int = brs.Native.fieldGet(child, "_id");
 		if (cid == xid) {
 			brs.Native.delete(children, i);
-			brs.Native.fieldSet(x, "parent", untyped __brs__('invalid !21!'));
+			brs.Native.fieldSet(x, "parent", untyped __brs__('invalid'));
 			return untyped __brs__('true');
 		}
 		i = i + 1;
@@ -309,7 +315,7 @@ extern class Xml {
 	return untyped __brs__('false');
 }
 
-@:keep @:brs_global function __Xml_insertChild__(self:Dynamic, x:Dynamic, pos:Int):Dynamic {
+@:keep @:brs_global function __Xml_insertChild__(self:Dynamic, x:Dynamic, pos:Int):Void {
 	// Remove from old parent
 	var oldParent:Dynamic = brs.Native.fieldGet(x, "parent");
 	untyped __brs__('if {0} <> invalid then __Xml_removeChild__({0}, {1})', oldParent, x);
@@ -339,7 +345,7 @@ extern class Xml {
 		end for
 	', children, x, pos);
 	brs.Native.fieldSet(x, "parent", self);
-	return untyped __brs__('invalid !22!');
+	// return untyped __brs__('invalid !22!');
 }
 
 // --- XML entity escaping ---
@@ -437,7 +443,7 @@ extern class Xml {
 
 // --- Parser node helpers ---
 
-@:keep @:brs_global function __Xml_pDelimited__(st:Dynamic, parent:Dynamic, startOffset:Int, endDelim:String, nodeType:Int):Dynamic {
+@:keep @:brs_global function __Xml_pDelimited__(st:Dynamic, parent:Dynamic, startOffset:Int, endDelim:String, nodeType:Int):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final l:Int = brs.Native.toInt(brs.Native.fieldGet(st, "l"));
 	final p:Int = brs.Native.toInt(brs.Native.fieldGet(st, "p"));
@@ -449,10 +455,10 @@ extern class Xml {
 	final content:String = brs.Native.mid(s, contentStart, endPos - contentStart);
 	brs.Native.fieldSet(st, "p", endPos + endLen);
 	untyped __brs__('__Xml_addChild__({0}, __Xml_createNode__({1}, "", {2}))', parent, nodeType, content);
-	return untyped __brs__('invalid !23!');
+	// return untyped __brs__('invalid !23!');
 }
 
-@:keep @:brs_global function __Xml_pText__(st:Dynamic, parent:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_pText__(st:Dynamic, parent:Dynamic):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final l:Int = brs.Native.toInt(brs.Native.fieldGet(st, "l"));
 	final p:Int = brs.Native.toInt(brs.Native.fieldGet(st, "p"));
@@ -467,7 +473,7 @@ extern class Xml {
 	}
 	if (brs.Native.len(content) > 0)
 		untyped __brs__('__Xml_addChild__({0}, __Xml_createPCData__(__Xml_unescape__({1})))', parent, content);
-	return untyped __brs__('invalid !24!');
+	// return untyped __brs__('invalid !24!');
 }
 
 // --- Parser attribute & whitespace helpers ---
@@ -539,7 +545,7 @@ extern class Xml {
 
 // --- Parser orchestrators ---
 
-@:keep @:brs_global function __Xml_pBang__(st:Dynamic, parent:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_pBang__(st:Dynamic, parent:Dynamic):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final p:Int = brs.Native.toInt(brs.Native.fieldGet(st, "p"));
 	if (brs.Native.mid(s, p, 4) == "<!--")
@@ -548,10 +554,10 @@ extern class Xml {
 		untyped __brs__('__Xml_pDelimited__({0}, {1}, 9, "]]>", 2)', st, parent);
 	else
 		untyped __brs__('__Xml_pDelimited__({0}, {1}, 2, ">", 4)', st, parent);
-	return untyped __brs__('invalid !25!');
+	// return untyped __brs__('invalid !25!');
 }
 
-@:keep @:brs_global function __Xml_pKids__(st:Dynamic, parent:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_pKids__(st:Dynamic, parent:Dynamic):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final l:Int = brs.Native.toInt(brs.Native.fieldGet(st, "l"));
 	while (brs.Native.toInt(brs.Native.fieldGet(st, "p")) < l) {
@@ -568,16 +574,17 @@ extern class Xml {
 					var endPos:Int = brs.Native.instrFrom(p, s, ">");
 					if (endPos >= 0)
 						brs.Native.fieldSet(st, "p", endPos + 1);
-					return untyped __brs__('invalid !26!');
+					// return untyped __brs__('invalid !26!');
+					return;
 				default:
 					untyped __brs__('__Xml_pElem__({0}, {1})', st, parent);
 			}
 		}
 	}
-	return untyped __brs__('invalid !27!');
+	// return untyped __brs__('invalid !27!');
 }
 
-@:keep @:brs_global function __Xml_pOpenTag__(st:Dynamic, el:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_pOpenTag__(st:Dynamic, el:Dynamic):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final l:Int = brs.Native.toInt(brs.Native.fieldGet(st, "l"));
 	var p:Int = brs.Native.toInt(brs.Native.fieldGet(st, "p"));
@@ -603,10 +610,10 @@ extern class Xml {
 		}
 	}
 	brs.Native.fieldSet(st, "p", p);
-	return untyped __brs__('invalid !28!');
+	// return untyped __brs__('invalid !28!');
 }
 
-@:keep @:brs_global function __Xml_pElem__(st:Dynamic, parent:Dynamic):Dynamic {
+@:keep @:brs_global function __Xml_pElem__(st:Dynamic, parent:Dynamic):Void {
 	final s:String = brs.Native.fieldGet(st, "s");
 	final l:Int = brs.Native.toInt(brs.Native.fieldGet(st, "l"));
 	final p:Int = brs.Native.toInt(brs.Native.fieldGet(st, "p")) + 1; // skip '<'
@@ -616,5 +623,5 @@ extern class Xml {
 	brs.Native.fieldSet(st, "p", nameEnd);
 	untyped __brs__('__Xml_pOpenTag__({0}, __xel)', st);
 	untyped __brs__('__Xml_addChild__({0}, __xel)', parent);
-	return untyped __brs__('invalid !29!');
+	// return untyped __brs__('invalid !29!');
 }

@@ -1,15 +1,27 @@
 package haxe.rtti;
 
-/**
-	Accesses compile-time metadata at runtime via __hx_meta__ tables.
-**/
-extern class Meta {
-	@:nativeFunctionCode("({arg0}).__hx_meta__[\"fields\"]")
-	public static function getFields(t:Dynamic):Dynamic;
+ class Meta {
+	public static function getFields(t:Dynamic):Dynamic {
+		try {
+			return t.__static__.__hx_meta__.fields;
+		} catch (e:Dynamic) {
+			return null;
+		}
+	}
 
-	@:nativeFunctionCode("({arg0}).__hx_meta__[\"statics\"]")
-	public static function getStatics(t:Dynamic):Dynamic;
+	public static function getStatics(t:Dynamic):Dynamic {
+		try {
+			return t.__static__.__hx_meta__.statics;
+		} catch (e:Dynamic) {
+			return null;
+		}
+	}
 
-	@:nativeFunctionCode("invalid")
-	public static function getType(t:Dynamic):Dynamic;
+	public static function getType(t:Dynamic):Dynamic {
+		try {
+			return t.__static__.__hx_name__;
+		} catch (e:Dynamic) {
+			return null;
+		}
+	}
 }

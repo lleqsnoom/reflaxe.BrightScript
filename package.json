@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "lix scope create && lix download",
     "brs": "brs",
     "test": "npm run brs out/amalgam.brs",
     "build:brs": "rm -rf _Build && haxe build.hxml",

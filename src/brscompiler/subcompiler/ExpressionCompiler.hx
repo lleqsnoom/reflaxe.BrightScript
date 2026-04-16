@@ -411,13 +411,13 @@ class ExpressionCompiler {
 		result.add(prefix);
 		if (tvar.meta.maybeHas(':arrayWrap')) {
 			result.addMulti(main.compileVarName(tvar.name, expr));
-			result.addMulti(vName, ' = [', vExpr, ']\n');
+			result.addMulti(vName, ' = [', vExpr, ']');
 		} else {
 			switch maybeExpr.expr {
 				case TUnop(op, postFix, e):
-					result.addMulti(vExpr, '\n');
+					result.addMulti(vExpr);
 				case _:
-					result.addMulti(vName, ' = ', vExpr, '\n');
+					result.addMulti(vName, ' = ', vExpr);
 			}
 		}
 		return result.toString();

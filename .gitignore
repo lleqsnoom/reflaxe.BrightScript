@@ -3,3 +3,4 @@ test/out
 node_modules/
 .haxelib/
 out/
+.brs/

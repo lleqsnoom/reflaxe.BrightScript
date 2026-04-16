@@ -229,7 +229,7 @@ class ClassCompiler {
 		final functionHeader = createFunctionHeader(f, null, returnInstance ? ' as Object' : null, true);
 		final functionBody = '$inject\n${main.compileClassFuncExpr(f.expr)}'.tab();
 		final returnInject = returnInstance ? '\treturn instance\n' : '';
-		return '$functionHeader\n$functionBody\n${returnInject}end function';
+		return '$functionHeader$functionBody\n${returnInject}end function';
 	}
 
 	function createGlobalFunctionDefinition(f:ClassFuncData) {
@@ -278,23 +278,26 @@ class ClassCompiler {
 		final staticEntries:Array<String> = [];
 
 		for (v in varFields) {
-			final meta = compileFieldMeta(v.field);
+			// final meta = compileFieldMeta(v.field);
+			final meta = "TODO_ADD_META";
+
 			if (meta != null) {
 				if (v.isStatic)
-					staticEntries.push('"${v.field.name}": $meta');
+					staticEntries.push('"${v.field.name}": "$meta"');
 				else
-					fieldEntries.push('"${v.field.name}": $meta');
+					fieldEntries.push('"${v.field.name}": "$meta"');
 			}
 		}
 		for (f in funcFields) {
 			if (f.field.name == 'new')
 				continue;
-			final meta = compileFieldMeta(f.field);
+			// final meta = compileFieldMeta(f.field);
+			final meta = "TODO_ADD_META";
 			if (meta != null) {
 				if (f.isStatic)
-					staticEntries.push('"${f.field.name}": $meta');
+					staticEntries.push('"${f.field.name}": "$meta"');
 				else
-					fieldEntries.push('"${f.field.name}": $meta');
+					fieldEntries.push('"${f.field.name}": "$meta"');
 			}
 		}
 
