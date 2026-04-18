@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "lix scope create && lix download",
     "brs": "brs",
-    "test": "npm run brs out/amalgam.brs",
+    "test": "haxe build.hxml && npm run brs out/amalgam.brs",
+    "utest": "haxe test.hxml && npm run brs out/test_amalgam.brs",
     "build:brs": "rm -rf _Build && haxe build.hxml",
     "build": "haxe build.hxml"
   },

@@ -48,7 +48,7 @@ class BRSCompilerInit {
 	}
 
 	static function reservedNames() {
-		return ["pos", "end", "stop", "tab", "line", "next", "step"];
+		return ["pos", "end", "stop", "tab", "line", "next", "step", "run"];
 	}
 }
 #end

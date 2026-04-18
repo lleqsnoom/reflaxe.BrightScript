@@ -6,6 +6,7 @@ import reflaxe.data.ClassFuncArg;
 import reflaxe.data.ClassFuncData;
 import reflaxe.data.ClassVarData;
 import reflaxe.data.EnumOptionData;
+import brscompiler.config.Define;
 
 using StringTools;
 using reflaxe.helpers.ArrayHelper;
@@ -23,6 +24,7 @@ using reflaxe.helpers.TypedExprHelper;
 
 class ClassCompiler {
 	var main:brscompiler.BRSCompiler;
+	final functionRevervedNames = ["run"];
 
 	public function new(main:brscompiler.BRSCompiler) {
 		this.main = main;
@@ -109,7 +111,7 @@ class ClassCompiler {
 			global.add('${globals.join('\n\n')}\n\n');
 		}
 
-		body.add('function ${classPath}() as Object\n');
+		body.add('${Define.Function} ${classPath}() as Object\n');
 		final staticPrefixes:Array<String> = [];
 
 		// Collect instance field names for __hx_fields__
@@ -159,7 +161,7 @@ class ClassCompiler {
 		}
 
 		if (classFunctions.length > 0) {
-			final instanceBody = classFunctions.map(f -> '${f.field.name}: ${createFunctionDefinition(f)}'.tab());
+			final instanceBody = classFunctions.map(f -> '${createFunctionName(f.field.name)}: ${createFunctionDefinition(f)}'.tab());
 			final instanceVars = objectVariables.map(v -> {
 				final name = v.field.name;
 				final value = main.FComp.compileInstanceVarValue(v);
@@ -171,12 +173,12 @@ class ClassCompiler {
 			final instanceBodyStr = 'instance = {\n$instanceVarsStr${instanceBody.join(',\n\n')}\n}\n'.tab();
 			final newFunction = switch constructor {
 				case null:
-					'$ConstructorName: function() as Object\n$instanceBodyStr\n\treturn instance\nend function\n';
+					'$ConstructorName: ${Define.Function}() as Object\n$instanceBodyStr\n\treturn instance\n${Define.EndFunction}\n';
 				case _:
 					final callParams = constructor.args.map(a -> a.getName()).join(', ');
 					final callNew = 'instance.__static__ = m\ninstance.constructor($callParams)'.tab();
 					final ret = 'return instance'.tab();
-					'$ConstructorName: ${createFunctionHeader(constructor, null, null, true)}\n$instanceBodyStr\n$callNew\n$ret\nend function\n';
+					'$ConstructorName: ${createFunctionHeader(constructor, null, null, false, "a")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
 			}
 			body.add(newFunction.tab().tab());
 		} else if (constructor != null) {
@@ -192,11 +194,11 @@ class ClassCompiler {
 			final instanceBodyStr = 'instance = {\n$instanceVarsStr$constructorDef\n}\n'.tab();
 			final callNew = 'instance.__static__ = m\ninstance.constructor($callParams)'.tab();
 			final ret = 'return instance'.tab();
-			final newFunction = '$ConstructorName: ${createFunctionHeader(constructor, null, null, true)}\n$instanceBodyStr\n$callNew\n$ret\nend function\n';
+			final newFunction = '$ConstructorName: ${createFunctionHeader(constructor, null, null, false, "b")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
 			body.add(newFunction.tab().tab());
 		}
 
-		body.addMulti('}\n'.tab(), 'end function\n');
+		body.addMulti('}\n'.tab(), '${Define.EndFunction}\n');
 		final classStr = (body.toString());
 		final globalStr = (global.toString());
 		brscompiler.BRSCompiler.saveFileWithDirs('.brs/${fullPath.join('/')}.brs', '$globalStr\n\n$classStr');
@@ -207,16 +209,28 @@ class ClassCompiler {
 
 	function compileReturnType(f:ClassFuncData):String {
 		final returnType = main.TComp.compileType(f.ret, f.field.pos);
-		return returnType != null ? ' as $returnType' : '';
+		return returnType != null ? '$returnType' : '';
 	}
 
-	function createFunctionHeader(f:ClassFuncData, ?name:String, ?overrideReturnType:String, forceObject:Bool = false):String {
+	function createFunctionHeader(f:ClassFuncData, ?name:String, ?overrideReturnType:String, forceObject:Bool = false, type:String = "x"):String {
+		final namePrefix = createFunctionName(name);
+		return '${Define.Function} $namePrefix(${compileArgs(f.args, f.field, forceObject)}) as Object';
+	}
+
+	function createFunctionHeaderTyped(f:ClassFuncData, ?name:String, ?overrideReturnType:String):String {
 		final compiledReturnType = compileReturnType(f);
-		final returnType = if (overrideReturnType != null) overrideReturnType
-			else if (forceObject && compiledReturnType != ' as Boolean' && compiledReturnType != ' as Integer' && compiledReturnType != ' as Double') ' as Object'
-			else compiledReturnType;
-		final namePrefix = name != null ? ' $name' : '';
-		return 'function$namePrefix(${compileArgs(f.args, f.field, forceObject)})$returnType';
+		final namePrefix = createFunctionName(name);
+		return '${Define.Function} $namePrefix(${compileArgs(f.args, f.field)})${compiledReturnType == "Void" ? " as Void" : ""}';
+	}
+
+	function createFunctionName(name:String){
+		var namePrefix = name != null ? name : '';
+		for(name in functionRevervedNames) {
+			if (namePrefix == name) {
+				return '_$name';
+			}
+		}
+		return namePrefix;
 	}
 
 	function createFunctionDefinition(f:ClassFuncData, inject:String = '', returnInstance = false) {
@@ -226,31 +240,52 @@ class ClassCompiler {
 		if (f.tfunc == null) {
 			return null;
 		}
-		final functionHeader = createFunctionHeader(f, null, returnInstance ? ' as Object' : null, true);
-		final functionBody = '$inject\n${main.compileClassFuncExpr(f.expr)}'.tab();
+		// final functionHeader = createFunctionHeader(f, null, returnInstance ? ' as Object' : null, true, "c");
+		final functionHeader = createFunctionHeaderTyped(f, null, returnInstance ? ' as Object' : null);
+		final contextArgs = copyArgsToContext(f);
+		final functionBody = '\n$contextArgs\n$inject\n${main.compileClassFuncExpr(f.expr)}'.tab();
 		final returnInject = returnInstance ? '\treturn instance\n' : '';
-		return '$functionHeader$functionBody\n${returnInject}end function';
+		return '$functionHeader$functionBody\n${returnInject}${Define.EndFunction}';
+	}
+
+	function copyArgsToContext(f:ClassFuncData){
+		final ecapsulateCtxArg = (a, p) -> {
+			final name = main.compileFunctionArgument(a, p);
+			'${Define.Ctx}.$name = $name';
+		}
+		final args = f.args.map(a -> ecapsulateCtxArg(a, f.field.pos));
+		return '${Define.NewCtx}\n${args.join('\n')}';
 	}
 
 	function createGlobalFunctionDefinition(f:ClassFuncData) {
-		final functionHeader = createFunctionHeader(f, f.field.name);
-		final functionBody = '${main.compileClassFuncExpr(f.expr)}'.tab();
-		return '$functionHeader\n$functionBody\nend function';
+		final functionHeader = createFunctionHeaderTyped(f, f.field.name);
+		final functionBody = '${Define.NewCtx}\n${main.compileClassFuncExpr(f.expr)}'.tab();
+		return '$functionHeader\n$functionBody\n${Define.EndFunction}';
 	}
 
 	function compileArgs(args, field, forceObject:Bool = false):String {
 		final compiledArgs = args.map(a -> main.compileFunctionArgument(a, field.pos, forceObject));
+		// for(a in args) {
+		// 	trace(a.name + ": " + TypeHelper.toString(a.t));
+		// }
 		return compiledArgs.join(', ');
 	}
 
 	function compileFieldMeta(field:ClassField):Null<String> {
-		final metas = field.meta.get().filter(m -> !StringTools.startsWith(m.name, ':') && m.name != '');
+		// final metas = field.meta.get().filter(m -> !StringTools.startsWith(m.name, ':') && m.name != '');
+
+		final metas = field.meta.get();
+
 		if (metas.length == 0)
 			return null;
+
+		// trace('Compiling meta for field ${field.name}: ${metas.map(m -> m.name).join(', ')}');
+		
 		final parts:Array<String> = [];
 		for (m in metas) {
 			final args = if (m.params != null && m.params.length > 0) {
 				final compiledArgs = m.params.map(p -> compileMetaParam(p));
+				// trace(m, compiledArgs);
 				'[${compiledArgs.join(", ")}]';
 			} else {
 				'[]';
@@ -278,7 +313,7 @@ class ClassCompiler {
 		final staticEntries:Array<String> = [];
 
 		for (v in varFields) {
-			// final meta = compileFieldMeta(v.field);
+			// final meta2 = compileFieldMeta(v.field);
 			final meta = "TODO_ADD_META";
 
 			if (meta != null) {
@@ -291,13 +326,13 @@ class ClassCompiler {
 		for (f in funcFields) {
 			if (f.field.name == 'new')
 				continue;
-			// final meta = compileFieldMeta(f.field);
-			final meta = "TODO_ADD_META";
+			final meta = compileFieldMeta(f.field);
+			// final meta = "TODO_ADD_META";
 			if (meta != null) {
 				if (f.isStatic)
-					staticEntries.push('"${f.field.name}": "$meta"');
+					staticEntries.push('"${f.field.name}": $meta');
 				else
-					fieldEntries.push('"${f.field.name}": "$meta"');
+					fieldEntries.push('"${f.field.name}": $meta');
 			}
 		}
 

@@ -25,14 +25,34 @@ class FieldAccessCompiler {
 	}
 
 	public function fieldAccessToBrightScriptResolved(resolvedExpr:String, e:TypedExpr, fa:FieldAccess):String {
+		var type = "";
 		final nameMeta:NameAndMeta = switch (fa) {
-			case FInstance(_, _, classFieldRef): classFieldRef.get();
-			case FStatic(_, classFieldRef): classFieldRef.get();
-			case FAnon(classFieldRef): classFieldRef.get();
-			case FClosure(_, classFieldRef): classFieldRef.get();
-			case FEnum(_, enumField): enumField;
-			case FDynamic(s): {name: s, meta: null};
+			case FInstance(_, _, classFieldRef): 
+				type = "instance";
+				classFieldRef.get();
+			case FStatic(_, classFieldRef): 
+				type = "static";
+				classFieldRef.get();
+			case FAnon(classFieldRef): 
+				type = "anon";
+				classFieldRef.get();
+			case FClosure(_, classFieldRef): 
+				type = "closure";
+				classFieldRef.get();
+			case FEnum(_, enumField): 
+				type = "enum";
+				enumField;
+			case FDynamic(s): 
+				type = "dynamic";
+				{name: s, meta: null};
 		}
+
+		// final debug = nameMeta.name == "complete"; 
+		// if (debug) {
+		// 	trace("========= Compiling field access: " + nameMeta.name + " (type: " + type + ")");
+		// 	trace(resolvedExpr);
+		// 	trace(fa);
+		// }
 
 		final name = main.compileVarName(nameMeta.getNameOrNativeName());
 		var bypassSelf = false;
@@ -53,11 +73,17 @@ class FieldAccessCompiler {
 							case TInst(clsRef2, _) if (clsRef.get().name == clsRef2.get().name): true;
 							case _: false;
 						}
+						// if (debug) {
+						// 	trace("Checking self access for field: " + nameMeta.name +" "+isSameClass);
+						// }
 						if (isSameClass) {
 							final selfData = main.selfStack[main.selfStack.length - 1];
 							final field = clsFieldRef.get();
 							bypassSelf = field.hasMeta(Meta.BypassWrapper) || (selfData.publicOnly && !field.isPublic);
 						}
+						// if (debug) {
+						// 	trace("Bypass self: " + bypassSelf);
+						// }
 					}
 				}
 
@@ -93,7 +119,7 @@ class FieldAccessCompiler {
 				{
 					final enumType = enumRef.get();
 					if (enumType.isReflaxeExtern()) {
-						trace("Reflaxe extern enum: " + enumType.getNameOrNative());
+						// trace("Reflaxe extern enum: " + enumType.getNameOrNative());
 						return enumType.getNameOrNative() + "." + enumField.name;
 					}
 
@@ -107,6 +133,9 @@ class FieldAccessCompiler {
 			case FInstance(clsRef, _, clsFieldRef):
 				{
 					if (isSelfAccess(e) && clsFieldRef.get().hasMeta(Meta.Const)) {
+						// if (debug) {
+							// trace("Accessing const field without self: " + nameMeta.name);
+						// }
 						return name;
 					}
 				}
@@ -117,17 +146,29 @@ class FieldAccessCompiler {
 		switch (fa) {
 			case FAnon(classFieldRef):
 				{
+					// if (debug) {
+					// 	trace("Compiling anonymous field access: " + nameMeta.name);
+					// }
 					return expr + '.${classFieldRef.get().name}';
 				}
 			case _:
 		}
 
+		// if (debug) {
+		// 	trace("isSelfAccess(e)"+ isSelfAccess(e) +" "+e.expr);
+		// }
 		if (bypassSelf) {
+			// if (debug)
+			// 	trace("Bypassing self for field: " + name);
 			return 'self.$name';
 		} else if (isSelfAccess(e)) {
+			// if (debug)
+			// 	trace("Accessing field on self: " + name);	
 			return 'm.$name';
 		}
 		final resolvedExpr = expr != null ? expr : "m";
+		// if (debug)
+		// 	trace("Accessing field on expression: " + name + " (expr: " + resolvedExpr + ")");
 		return '${resolvedExpr}.$name';
 	}
 

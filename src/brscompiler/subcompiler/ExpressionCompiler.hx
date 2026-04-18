@@ -7,6 +7,8 @@ import reflaxe.data.ClassFuncArg;
 import reflaxe.data.ClassFuncData;
 import reflaxe.helpers.OperatorHelper;
 import reflaxe.preprocessors.implementations.everything_is_expr.EverythingIsExprSanitizer;
+import brscompiler.config.Define.FnCall;
+import brscompiler.config.Define;
 
 using StringTools;
 using reflaxe.helpers.ArrayHelper;
@@ -52,52 +54,57 @@ class ExpressionCompiler {
 		};
 	}
 
+	function adl(v:Dynamic){
+		return '';
+		return '%$v%-';
+	}
+
 	public function compileExpressionImpl(expr:TypedExpr, topLevel:Bool):Null<String> {
 		var result = new StringBuf();
 		switch (expr.expr) {
-			case TConst(TSuper): result.add(compileSuperExpr(expr));
-			case TConst(constant): result.add(constantToBrightScript(constant));
-			case TLocal(v): result.add(compileLocal(v, expr));
-			case TIdent(s): result.add(main.compileVarName(s, expr));
+			case TConst(TSuper): result.add(adl('TConst+TSuper') + compileSuperExpr(expr));
+			case TConst(constant): result.add(adl('TConst') + constantToBrightScript(constant));
+			case TLocal(v): result.add(adl('TLocal') + compileLocal(v, expr));
+			case TIdent(s): result.add(adl('TIdent') + main.compileVarName(s, expr));
 			case TArray(e1, e2):
 				if (containsStatementExpr(e1)) {
 					final tmpName = '__tmp_${tempVarCounter++}';
 					final hoisted = compileIfAsAssignment(e1.unwrapParenthesis(), tmpName);
-					pendingPrefix.add(hoisted);
-					result.addMulti(tmpName, '[', main.compileExpressionOrError(e2), ']');
+					pendingPrefix.add(adl('TArray.1') + hoisted);
+					result.addMulti(adl('TArray.2') + tmpName, '[', main.compileExpressionOrError(e2), ']');
 				} else {
-					result.addMulti(main.compileExpressionOrError(e1), '[', main.compileExpressionOrError(e2), ']');
+					result.addMulti(adl('TArray.3') + main.compileExpressionOrError(e1), '[', main.compileExpressionOrError(e2), ']');
 				}
-			case TBinop(OpAssign, {expr: TField(e1, FAnon(classFieldRef))}, e2): result.add(compileAnonFieldAssign(e1, classFieldRef, e2));
-			case TBinop(op, e1, e2): result.add(binopToBrightScript(op, e1, e2));
-			case TField(e, fa): result.add(compileFieldExpr(e, fa, expr));
-			case TTypeExpr(m): result.add(main.TComp.compileType(TypeHelper.fromModuleType(m), expr.pos) ?? 'Invalid !4!');
-			case TParenthesis(e): result.add(compileParenthesis(e));
-			case TObjectDecl(fields): result.add(compileObjectDecl(fields));
-			case TArrayDecl(el): result.addMulti('[', el.map(e -> main.compileExpression(e)).join(', '), ']');
-			case TCall(e, el): result.add(compileCallExpr(e, el, expr));
-			case TNew(classTypeRef, _, el): result.add(newToBrightScript(classTypeRef, expr, el));
-			case TUnop(op, postFix, e): result.add(unopToBrightScript(op, e, postFix));
-			case TFunction(tfunc): result.add(compileFunctionExpr(tfunc, expr));
-			case TVar(tvar, maybeExpr): result.add(compileVarDecl(tvar, maybeExpr, expr));
-			case TBlock(el): result.add(compileBlock(el, topLevel));
-			case TFor(tvar, iterExpr, blockExpr): result.add(compileFor(tvar, iterExpr, blockExpr));
-			case TIf(econd, ifExpr, elseExpr): result.add(compileIf(econd, ifExpr, elseExpr));
-			case TWhile(econd, blockExpr, normalWhile): result.add(compileWhile(econd, blockExpr, normalWhile));
-			case TSwitch(e, cases, edef): result.add(switchToBrightScript(e, cases, edef, false));
-			case TTry(e, catches): result.add(compileTry(e, catches));
-			case TReturn(maybeExpr): result.add(compileReturn(maybeExpr));
+			case TBinop(OpAssign, {expr: TField(e1, FAnon(classFieldRef))}, e2): result.add(adl('TBinop+OpAssign') + compileAnonFieldAssign(e1, classFieldRef, e2));
+			case TBinop(op, e1, e2): result.add(adl('TBinop') + binopToBrightScript(op, e1, e2));
+			case TField(e, fa): result.add(adl('TField') + compileFieldExpr(e, fa, expr));
+			case TFunction(tfunc): result.add(adl('TFunction') + compileFunctionExpr(tfunc, expr));
+			case TTypeExpr(m): result.add(adl('TTypeExpr') + main.TComp.compileType(TypeHelper.fromModuleType(m), expr.pos) ?? 'Invalid !4!');
+			case TParenthesis(e): result.add(adl('TParenthesis') + compileParenthesis(e));
+			case TObjectDecl(fields): result.add(adl('TObjectDecl') + compileObjectDecl(fields));
+			case TArrayDecl(el): result.addMulti(adl('TArrayDecl') + '[', el.map(e -> main.compileExpression(e)).join(', '), ']');
+			case TCall(e, el): result.add(adl('TCall') + compileCallExpr(e, el, expr));
+			case TNew(classTypeRef, _, el): result.add(adl('TNew') + newToBrightScript(classTypeRef, expr, el));
+			case TUnop(op, postFix, e): result.add(adl('TUnop') + unopToBrightScript(op, e, postFix));
+			case TVar(tvar, maybeExpr): result.add(adl('TVar') + compileVarDecl(tvar, maybeExpr, expr));
+			case TBlock(el): result.add(adl('TBlock') + compileBlock(el, topLevel));
+			case TFor(tvar, iterExpr, blockExpr): result.add(adl('TFor') + compileFor(tvar, iterExpr, blockExpr));
+			case TIf(econd, ifExpr, elseExpr): result.add(adl('TIf') + compileIf(econd, ifExpr, elseExpr));
+			case TWhile(econd, blockExpr, normalWhile): result.add(adl('TWhile') + compileWhile(econd, blockExpr, normalWhile));
+			case TSwitch(e, cases, edef): result.add(adl('TSwitch') + switchToBrightScript(e, cases, edef, false));
+			case TTry(e, catches): result.add(adl('TTry') + compileTry(e, catches));
+			case TReturn(maybeExpr): result.add(adl('TReturn') + compileReturn(maybeExpr));
 			case TBreak:
 				final loopKind = loopKindStack.length > 0 ? loopKindStack[loopKindStack.length - 1] : "while";
-				result.add('exit $loopKind');
+				result.add(adl('TBreak') + 'exit $loopKind');
 			case TContinue:
 				final loopKind = loopKindStack.length > 0 ? loopKindStack[loopKindStack.length - 1] : "while";
-				result.add('continue $loopKind');
-			case TThrow(e): result.addMulti('THROW ', main.compileExpressionOrError(e));
-			case TCast(e, maybeModuleType): result.add(compileCast(e, maybeModuleType));
-			case TMeta(_, e): result.add(main.compileExpressionOrError(e));
-			case TEnumParameter(e, enumField, index): result.add(compileEnumParameter(e, enumField, index));
-			case TEnumIndex(e): result.add(compileEnumIndex(e));
+				result.add(adl('TContinue') + 'continue $loopKind');
+			case TThrow(e): result.addMulti(adl('TThrow') + 'THROW ', main.compileExpressionOrError(e));
+			case TCast(e, maybeModuleType): result.add(adl('TCast') + compileCast(e, maybeModuleType));
+			case TMeta(_, e): result.add(adl('TMeta') + main.compileExpressionOrError(e));
+			case TEnumParameter(e, enumField, index): result.add(adl('TEnumParameter') + compileEnumParameter(e, enumField, index));
+			case TEnumIndex(e): result.add(adl('TEnumIndex') + compileEnumIndex(e));
 		}
 		// For top-level statements, drain any pending prefix into the output
 		if (topLevel) {
@@ -111,8 +118,11 @@ class ExpressionCompiler {
 	}
 
 	function compileLocal(v:TVar, expr:TypedExpr):String {
-		final name = main.compileVarName(v.name, expr);
-		return v.meta.maybeHas(':arrayWrap') ? '${name}[0]' : name;
+		/**
+			TODO: solve closure like variables scope
+		**/
+		final name = Define.Ctx + '.' + main.compileVarName(v.name, expr);
+		return v.meta.maybeHas(':arrayWrap') ? '${name}[0]' : '${name}';
 	}
 
 	function compileAnonFieldAssign(e1:TypedExpr, classFieldRef:Ref<ClassField>, e2:TypedExpr):String {
@@ -123,6 +133,18 @@ class ExpressionCompiler {
 			case TIf(_, _, _): true;
 			case TSwitch(_, _, _): true;
 			case TBlock(_): true;
+			// case TArray | TArrayDecl | TBinop | TBreak | TCall | TCast | TConst | TContinue | TEnumIndex | TEnumParameter | TField | TFor | TFunction | TIdent | TLocal | TMeta | TNew | TObjectDecl | TParenthesis | TReturn | TThrow | TTry | TTypeExpr | TUnop | TVar | TWhile: false;
+			// case TField(_): true;
+			// case TFunction(_): true;
+			// case TConst(_): true;
+			// case TLocal(_): true;
+			// case TObjectDecl(_): true;
+			// case TVar(_): true;
+			// case TArrayDecl(_): true;
+			// case TArray(_): true;
+			// case TCall(_): true;
+			// case TParenthesis(_): true;
+			// case TTypeExpr(_): true;
 			case _: false;
 		};
 		if (needsHoist) {
@@ -214,20 +236,26 @@ class ExpressionCompiler {
 			case TFun(args, _): args;
 			case _: [];
 		};
+		params.push({name: '__ref', opt: false, t: null}); // Add extra parameter for the bound `m` context
 
 		// Generate the wrapper call function body
-		final fnVar = '__callFn${tempVarCounter++}';
+		final fnVar = FnCall(tempVarCounter++);
 		var fnBuf = new StringBuf();
 		fnBuf.add('$fnVar = function(');
 		for (i in 0...params.length) {
 			if (i > 0) fnBuf.add(', ');
-			fnBuf.add('__a$i as Object');
+			final p = params[i];
+			fnBuf.add('${p.name} as Object');
+			// fnBuf.add('__a$i as Object');
 		}
 		fnBuf.add(') as Object\n');
-		fnBuf.add('return m.__self.$methodName(');
+		// fnBuf.add('return m.__self.$methodName(');
+		fnBuf.add('return __ref.$methodName(');
+		params.pop(); // Remove the extra `m` context parameter for the actual method call
 		for (i in 0...params.length) {
 			if (i > 0) fnBuf.add(', ');
-			fnBuf.add('__a$i');
+			final p = params[i];
+			fnBuf.add('${p.name}');
 		}
 		fnBuf.add(')\nend function\n');
 		pendingPrefix.add(fnBuf.toString());
@@ -236,6 +264,47 @@ class ExpressionCompiler {
 		return '{"__self": $selfVar, "call": $fnVar}';
 	}
 
+	function compileFunctionExpr(tfunc:TFunc, expr:TypedExpr):String {
+		/**
+			TODO: Similar to closure
+		**/
+		final result = new StringBuf();
+		result.addMulti(Define.Function, '(');
+		tfunc.args.insert(0, {
+					v: {
+						isStatic: false,
+						id: null,
+						extra: null,
+						capture: null,
+						t: TDynamic(null), 
+						name: Define.Ctx,
+						meta: null,
+					},
+					value: null
+				}
+			);
+		var doComma = false;
+		for (i in 0...tfunc.args.length) {
+			if (doComma)
+				result.add(', ');
+			else
+				doComma = true;
+
+			final arg = tfunc.args[i];
+			final reflaxeArg = new ClassFuncArg(i, arg.v.t, false, arg.v.name, arg.v.meta, arg.value, arg.v);
+			result.add(main.compileFunctionArgument(reflaxeArg, expr.pos));
+		}
+		result.add(')');
+		final type = main.TComp.compileType(tfunc.t, expr.pos);
+		if (type != null) {
+			result.addMulti(' as ', type);
+		}
+		result.add('\n');
+		result.add(toIndentedScope(tfunc.expr, true));
+		result.addMulti('\n', Define.EndFunction);
+		return result.toString();
+	}
+	
 	function compileObjectDecl(fields:Array<{name:String, expr:TypedExpr}>):String {
 		var objBuf = new StringBuf();
 		objBuf.add('{');
@@ -365,34 +434,11 @@ class ExpressionCompiler {
 		};
 	}
 
-	function compileFunctionExpr(tfunc:TFunc, expr:TypedExpr):String {
-		var result = new StringBuf();
-		result.add('function(');
-		var doComma = false;
-		for (i in 0...tfunc.args.length) {
-			if (doComma)
-				result.add(', ');
-			else
-				doComma = true;
-
-			final arg = tfunc.args[i];
-			final reflaxeArg = new ClassFuncArg(i, arg.v.t, false, arg.v.name, arg.v.meta, arg.value, arg.v);
-			result.add(main.compileFunctionArgument(reflaxeArg, expr.pos));
-		}
-		result.add(')');
-		final type = main.TComp.compileType(tfunc.t, expr.pos);
-		if (type != null) {
-			result.addMulti(' as ', type);
-		}
-		result.add('\n');
-		result.add(toIndentedScope(tfunc.expr));
-		result.add('\nend function');
-		return result.toString();
-	}
-
 	function compileVarDecl(tvar:TVar, maybeExpr:Null<TypedExpr>, expr:TypedExpr):String {
 		if (maybeExpr == null) return '';
 		var result = new StringBuf();
+		result.add('${Define.Ctx}.');
+
 		final vName = main.compileVarName(tvar.name, expr);
 		// For if/switch/block value expressions, use compileIfAsAssignment directly
 		final needsHoist = switch (unwrapStatementExpr(maybeExpr).expr) {
@@ -410,7 +456,7 @@ class ExpressionCompiler {
 		pendingPrefix = new StringBuf();
 		result.add(prefix);
 		if (tvar.meta.maybeHas(':arrayWrap')) {
-			result.addMulti(main.compileVarName(tvar.name, expr));
+			// result.addMulti(main.compileVarName(tvar.name, expr));
 			result.addMulti(vName, ' = [', vExpr, ']');
 		} else {
 			switch maybeExpr.expr {
@@ -457,7 +503,7 @@ class ExpressionCompiler {
 	// Compiles block-level expressions, detecting and fixing the for-in
 	// desugaring pattern where the Haxe compiler reuses the same variable
 	// name for both the iterator and the loop value.
-	function compileBlockElements(el:Array<TypedExpr>):Array<String> {
+	function compileBlockElements(el:Array<TypedExpr>, ?isAnon:Bool = false):Array<String> {
 		var results:Array<String> = [];
 		var i = 0;
 		while (i < el.length) {
@@ -471,12 +517,23 @@ class ExpressionCompiler {
 			}
 			// Skip non-side-effectful bare expressions (BRS doesn't allow them as statements)
 			final skip = shouldSkipBareStatementExpr(el[i]);
+			if(isAnon){
+				trace('shouldSkipBareStatementExpr: $skip');
+			}
 			if (!skip) {
 				final compiled = main.compileExpression(el[i]);
+				if(isAnon){
+					trace('compiled: $compiled');
+				}
 				if (compiled != null) {
 					final statement = stripTrailingBareValueLine(compiled);
 					if (statement.trim().length > 0) results.push(statement);
 				}
+			}else{
+				trace('================= shouldSkipBareStatementExpr
+				${el[i]}
+				');
+
 			}
 			i++;
 		}
@@ -733,7 +790,7 @@ class ExpressionCompiler {
 			case TFun(args, _):
 				if (index < args.length) {
 					result.addMulti(".", args[index].name);
-				}
+				}	
 			case _:
 		}
 		return result.toString();
@@ -864,6 +921,9 @@ class ExpressionCompiler {
 			pendingPrefix.add(compileIfAsAssignment(e1.unwrapParenthesis(), tmpName));
 			expr1 = tmpName;
 		} else {
+			// trace('================ !lhsNeedsHoist
+			// $e1
+			// ');
 			expr1 = main.compileExpression(e1);
 		}
 
@@ -1057,12 +1117,12 @@ class ExpressionCompiler {
 				final combinedArg = (argInfo.prefix.length > 0 ? argInfo.prefix : '') + arg;
 				final argExpr = argInfo.expr;
 				final normalizedArgExpr = unwrapStatementExpr(argExpr);
-				if (combinedArg.indexOf('\n') >= 0 && combinedArg.indexOf('function(') >= 0 && combinedArg.indexOf('end function') >= 0) {
+				if (combinedArg.indexOf('\n') >= 0 && combinedArg.indexOf('${Define.Function}(') >= 0 && combinedArg.indexOf(Define.EndFunction) >= 0) {
 					final tmpName = '__tmp_${tempVarCounter++}';
 					final lines = combinedArg.split('\n');
 					var functionStart = -1;
 					for (j in 0...lines.length) {
-						if (lines[j].trim().startsWith('function(')) {
+						if (lines[j].trim().startsWith('${Define.Function}(')) {
 							functionStart = j;
 							break;
 						}
@@ -1099,7 +1159,7 @@ class ExpressionCompiler {
 					final tmpName = '__tmp_${tempVarCounter++}';
 					result.add(compileIfAsAssignment(normalizedArgExpr, tmpName));
 					hoistedArgs.push(tmpName);
-				} else if (combinedArg.indexOf('\n') >= 0 && !shouldNotHoist && combinedArg.indexOf('function(') < 0 && combinedArg.indexOf('end function') < 0) {
+				} else if (combinedArg.indexOf('\n') >= 0 && !shouldNotHoist && combinedArg.indexOf('${Define.Function}(') < 0 && combinedArg.indexOf(Define.EndFunction) < 0) {
 					final tmpName = '__tmp_${tempVarCounter++}';
 					final lines = combinedArg.split('\n');
 					final lastLine = lines.pop();
@@ -1133,14 +1193,14 @@ class ExpressionCompiler {
 			// If calledExpr is multi-line (e.g. chained on NFC with function arg),
 			// hoist entire expression to temp var — but only when the multi-line content
 			// is NOT from function arguments (which BRS handles natively in call parens)
-			if (compiledCalledExpr.indexOf('\n') >= 0 && compiledCalledExpr.indexOf('function(') < 0) {
+			if (compiledCalledExpr.indexOf('\n') >= 0 && compiledCalledExpr.indexOf('${Define.Function}(') < 0) {
 				final tmpName = '__tmp_${tempVarCounter++}';
 				final lines = compiledCalledExpr.split('\n');
 				final lastLine = lines.pop();
 				result.add(lines.join('\n') + '\n');
 				result.add('$tmpName = $lastLine\n');
 				if (needsBoundCheck) {
-					result.add('__callFn${hoistedArgs.length}__($tmpName');
+					result.add('${FnCall(hoistedArgs.length)}($tmpName');
 					if (hoistedArgs.length > 0) {
 						result.add(', ');
 						result.add(hoistedArgs.join(', '));
@@ -1152,7 +1212,7 @@ class ExpressionCompiler {
 					result.add(')');
 				}
 			} else if (needsBoundCheck) {
-				result.add('__callFn${hoistedArgs.length}__(${compiledCalledExpr}');
+				result.add('${FnCall(hoistedArgs.length)}(${Define.Ctx}, ${compiledCalledExpr}');
 				if (hoistedArgs.length > 0) {
 					result.add(', ');
 					result.add(hoistedArgs.join(', '));
@@ -1218,21 +1278,34 @@ class ExpressionCompiler {
 	}
 
 	function condToBrightScript(e:TypedExpr, eif:TypedExpr, eelse:TypedExpr):String {
+		// TODO: anonymous function scope issue
 		return switch e.expr {
-			case TParenthesis(e1): condToBrightScript(e1, eif, eelse);
+			case TParenthesis(e1): 
+				// trace('======= TParenthesis
+				// $e
+				// ');	
+				condToBrightScript(e1, eif, eelse);		
 			default:
+				// trace('======= default
+				// $e
+				// ');	
 				main.compileExpressionOrError(e);
 		}
 	}
 
-	function toIndentedScope(e:TypedExpr):String {
+	function toIndentedScope(e:TypedExpr, ?isAnon:Bool = false):String {
 		final result = new StringBuf();
+		if(isAnon){
+			trace('======= isAnon
+			${e}
+			');
+		}
 		switch (e.expr) {
 			case TBlock(el):
 				{
 					if (el.length > 0) {
 						final filtered = filterBlockReturnValue(el);
-						final elements = compileBlockElements(filtered);
+						final elements = compileBlockElements(filtered, isAnon);
 						for (i in 0...elements.length) {
 							result.add(elements[i].tab());
 							if (i < elements.length - 1) {

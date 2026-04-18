@@ -18,6 +18,8 @@ import reflaxe.data.EnumOptionData;
 import reflaxe.helpers.Context;
 import sys.FileSystem;
 import sys.io.File;
+import brscompiler.config.Define.FnCall;
+import brscompiler.config.Define;
 
 using StringTools;
 using reflaxe.helpers.ArrayHelper;
@@ -78,11 +80,14 @@ class BRSCompiler extends DirectToStringCompiler {
 		result.add(compileVarName(arg.getName()));
 
 		if (forceObject) {
-			result.addMulti(' as ', 'Object');
+			// TODO: Implement proper type-based coercion
+			// result.addMulti(' as ', 'Object');
 		} else {
 			final type = TComp.compileType(arg.type, pos);
+
 			if (type != null) {
-				result.addMulti(' as ', type);
+				// TODO: Implement proper type-based coercion
+				// result.addMulti(' as ', type);
 			}
 		}
 
@@ -113,29 +118,42 @@ class BRSCompiler extends DirectToStringCompiler {
 		return EComp.compileExpressionImpl(expr, topLevel);
 	}
 
+	override public function compileVarName(name: String, expr: Null<TypedExpr> = null, field: Null<ClassField> = null): String {
+		if(name == "isSync"){
+			trace('================>' + name, expr);
+		}
+		// return super.compileVarName(name, expr, field);
+		if(reservedVarNameMap != null) {
+			while(reservedVarNameMap.exists(name)) {
+				name = "_" + name;
+			}
+		}
+		return '$name';
+	}
+
 	override function onOutputComplete() {
 		final outputFile = Context.getDefines().get("brightscript-output");
 		var content = sys.io.File.getContent(outputFile);
-
 		// Generate __callFnN__ helpers for bound closure dispatch.
 		// These check if a function value is a bound method wrapper (AA with .call)
 		// and call through .call() to preserve the `m` context binding.
 		var helpers = new StringBuf();
 		for (arity in 0...6) {
-			helpers.add('function __callFn${arity}__(fn as Object');
+			helpers.add('function ${FnCall(arity)}(${Define.Ctx} as Object, fn as Object');
 			for (i in 0...arity) {
-				helpers.add(', _a$i as Object');
+				helpers.add(', a$i as Object');
 			}
 			helpers.add(') as Object\n');
 			helpers.add('if Type(fn) = "roAssociativeArray" then return fn.call(');
 			for (i in 0...arity) {
 				if (i > 0) helpers.add(', ');
-				helpers.add('_a$i');
+				helpers.add('a$i');
 			}
-			helpers.add(')\nreturn fn(');
+			helpers.add('${arity > 0 ? ", " : ""}fn.__self');
+			helpers.add(')\nreturn fn(${Define.Ctx}');
 			for (i in 0...arity) {
-				if (i > 0) helpers.add(', ');
-				helpers.add('_a$i');
+				helpers.add(', ');
+				helpers.add('a$i');
 			}
 			helpers.add(')\nend function\n\n');
 		}

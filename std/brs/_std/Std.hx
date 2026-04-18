@@ -34,6 +34,8 @@ extern class Std {
 	final dynType = brs.Native.typeOf(a);
 
 	return switch dynType {
+		case 'String': a;
+		case 'Integer': untyped __brs__('Str({0})', a);
 		case 'roString': a;
 		case 'roInt': untyped __brs__('Str({0})', a);
 		case 'roFloat': untyped __brs__('Str({0})', a);
