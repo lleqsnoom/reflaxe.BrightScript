@@ -1,5 +1,7 @@
 package haxe;
 
+import brscompiler.config.Define;
+
 extern class Timer {
 	@:nativeFunctionCode("__Timer_new__({arg0})")
 	function new(time_ms:Int);
@@ -38,8 +40,8 @@ extern class Timer {
 @:keep @:brs_global function __Timer_delay__(f:Dynamic, time_ms:Int):Dynamic {
 	untyped __brs__('
 		Sleep({1})
-		__callFn0__({0})
-	', f, time_ms);
+		__callFn0__({2}, {0})
+	', f, time_ms, Define.Ctx);
 	return untyped __brs__('{"__interval": {0}, "__stopped": true}', time_ms);
 }
 

@@ -7,7 +7,6 @@ import reflaxe.data.ClassFuncArg;
 import reflaxe.data.ClassFuncData;
 import reflaxe.helpers.OperatorHelper;
 import reflaxe.preprocessors.implementations.everything_is_expr.EverythingIsExprSanitizer;
-import brscompiler.config.Define.FnCall;
 import brscompiler.config.Define;
 
 using StringTools;
@@ -239,7 +238,7 @@ class ExpressionCompiler {
 		params.push({name: '__ref', opt: false, t: null}); // Add extra parameter for the bound `m` context
 
 		// Generate the wrapper call function body
-		final fnVar = FnCall(tempVarCounter++);
+		final fnVar = Define.FnCall(tempVarCounter++);
 		var fnBuf = new StringBuf();
 		fnBuf.add('$fnVar = function(');
 		for (i in 0...params.length) {
@@ -269,6 +268,7 @@ class ExpressionCompiler {
 			TODO: Similar to closure
 		**/
 		final result = new StringBuf();
+		result.addMulti('${Define.Ctx}: ${Define.Ctx}\ncall: ');
 		result.addMulti(Define.Function, '(');
 		tfunc.args.insert(0, {
 					v: {
@@ -302,7 +302,7 @@ class ExpressionCompiler {
 		result.add('\n');
 		result.add(toIndentedScope(tfunc.expr, true));
 		result.addMulti('\n', Define.EndFunction);
-		return result.toString();
+		return '{\n${result.toString().tab()}\n}';
 	}
 	
 	function compileObjectDecl(fields:Array<{name:String, expr:TypedExpr}>):String {
@@ -1200,7 +1200,7 @@ class ExpressionCompiler {
 				result.add(lines.join('\n') + '\n');
 				result.add('$tmpName = $lastLine\n');
 				if (needsBoundCheck) {
-					result.add('${FnCall(hoistedArgs.length)}($tmpName');
+					result.add('${Define.FnCall(hoistedArgs.length)}($tmpName');
 					if (hoistedArgs.length > 0) {
 						result.add(', ');
 						result.add(hoistedArgs.join(', '));
@@ -1212,7 +1212,7 @@ class ExpressionCompiler {
 					result.add(')');
 				}
 			} else if (needsBoundCheck) {
-				result.add('${FnCall(hoistedArgs.length)}(${Define.Ctx}, ${compiledCalledExpr}');
+				result.add('${Define.FnCall(hoistedArgs.length)}(${Define.Ctx}, ${compiledCalledExpr}');
 				if (hoistedArgs.length > 0) {
 					result.add(', ');
 					result.add(hoistedArgs.join(', '));

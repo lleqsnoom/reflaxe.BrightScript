@@ -34,11 +34,11 @@ class Main {
 	} 
 
 	public static function main() {
-		new Main();
+		// new Main();
 
-		// var runner = new Runner();
-		// trace("Adding test cases...");
-		// runner.addCase(new LanguageTests());
+		var runner = new Runner();
+		trace("Adding test cases...");
+		runner.addCase(new LanguageTests());
 		// runner.addCase(new ArrayTests());
 		// runner.addCase(new StringTests());
 		// runner.addCase(new MathTests());
@@ -63,9 +63,9 @@ class Main {
 		// runner.addCase(new CryptoTests());
 		// runner.addCase(new CallStackTests());
 		// runner.addCase(new MetaTests());
-		// Report.create(runner);
-		// trace("Running tests...");
-		// runner.run();
-		// trace("All tests complete.");
+		Report.create(runner);
+		trace("Running tests...");
+		runner.run();
+		trace("All tests complete.");
 	}
 }

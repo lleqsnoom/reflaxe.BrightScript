@@ -259,7 +259,8 @@ class ClassCompiler {
 
 	function createGlobalFunctionDefinition(f:ClassFuncData) {
 		final functionHeader = createFunctionHeaderTyped(f, f.field.name);
-		final functionBody = '${Define.NewCtx}\n${main.compileClassFuncExpr(f.expr)}'.tab();
+		final contextArgs = copyArgsToContext(f);
+		final functionBody = '${contextArgs}\n${main.compileClassFuncExpr(f.expr)}'.tab();
 		return '$functionHeader\n$functionBody\n${Define.EndFunction}';
 	}
 

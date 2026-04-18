@@ -18,7 +18,6 @@ import reflaxe.data.EnumOptionData;
 import reflaxe.helpers.Context;
 import sys.FileSystem;
 import sys.io.File;
-import brscompiler.config.Define.FnCall;
 import brscompiler.config.Define;
 
 using StringTools;
@@ -139,18 +138,27 @@ class BRSCompiler extends DirectToStringCompiler {
 		// and call through .call() to preserve the `m` context binding.
 		var helpers = new StringBuf();
 		for (arity in 0...6) {
-			helpers.add('function ${FnCall(arity)}(${Define.Ctx} as Object, fn as Object');
+			helpers.add('function ${Define.FnCall(arity)}(${Define.Ctx} as Object, fn as Object');
 			for (i in 0...arity) {
 				helpers.add(', a$i as Object');
 			}
 			helpers.add(') as Object\n');
-			helpers.add('if Type(fn) = "roAssociativeArray" then return fn.call(');
+
+			helpers.add('if Type(fn) = "roAssociativeArray" AND fn.__self <> invalid then return fn.call(');
 			for (i in 0...arity) {
 				if (i > 0) helpers.add(', ');
 				helpers.add('a$i');
 			}
-			helpers.add('${arity > 0 ? ", " : ""}fn.__self');
-			helpers.add(')\nreturn fn(${Define.Ctx}');
+			helpers.add('${arity > 0 ? ", " : ""}fn.__self)');
+
+			helpers.add('\nif Type(fn) = "roAssociativeArray" AND fn.${Define.Ctx} <> invalid then return fn.call(fn.${Define.Ctx}');
+			for (i in 0...arity) {
+				if (i > 0) helpers.add(', ');
+				helpers.add('a$i');
+			}
+			helpers.add(')');
+
+			helpers.add('\nreturn fn(${Define.Ctx}');
 			for (i in 0...arity) {
 				helpers.add(', ');
 				helpers.add('a$i');
