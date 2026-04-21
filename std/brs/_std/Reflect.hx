@@ -69,12 +69,15 @@ extern class Reflect {
 }
 
 @:keep @:brs_global function __Reflect_isFunction__(f:Dynamic):Bool {
-	var t:String = brs.Native.typeOf(f);
-	var isFunc:Bool = brs.Native.eq(t, "roFunction");
-	if (isFunc == true)
+	final t:String = brs.Native.typeOf(f);
+	final isFunc:Bool = brs.Native.eq(t, "roFunction");
+	if (isFunc)
 		return untyped __brs__('true');
-	var isFunc2:Bool = brs.Native.eq(t, "Function");
-	if (isFunc2 == true)
+	final isFunc2:Bool = brs.Native.eq(t, "Function");
+	if (isFunc2)
+		return untyped __brs__('true');
+	final isFunc3:Bool = untyped __brs__('{0} = "roAssociativeArray" AND {1}.call <> invalid AND (Type({1}.call) = "Function" OR Type({1}.call) = "roFunction" )', t, f);
+	if(isFunc3)
 		return untyped __brs__('true');
 	return untyped __brs__('false');
 }

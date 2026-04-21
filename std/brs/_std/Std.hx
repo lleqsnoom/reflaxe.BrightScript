@@ -34,13 +34,11 @@ extern class Std {
 	final dynType = brs.Native.typeOf(a);
 
 	return switch dynType {
-		case 'String': a;
-		case 'Integer': untyped __brs__('Str({0})', a);
-		case 'roString': a;
-		case 'roInt': untyped __brs__('Str({0})', a);
-		case 'roFloat': untyped __brs__('Str({0})', a);
+		case 'roString' | 'String': a;
+		case 'roInt' | 'Integer': untyped __brs__('Str({0})', a);
+		case 'roBoolean' | 'Boolean': untyped __brs__('{0}.ToStr()', a);
+		case 'roFloat' | 'Float': untyped __brs__('Str({0})', a);
 		case 'roDouble': untyped __brs__('Str({0})', a);
-		case 'roBoolean': untyped __brs__('{0}.ToStr()', a);
 		case 'roArray':
 			untyped __brs__('
 			s = ""
@@ -65,6 +63,6 @@ extern class Std {
 			s = s + "}"', a);
 			'[${untyped __brs__("s")}]';
 		case 'Function': '[Function]';
-		case _: 'NOT_IMPLEMENTED__DynToStr__($dynType)';
+		case _: throw 'ERROR: NOT_IMPLEMENTED__DynToStr__($dynType)';
 	}
 }

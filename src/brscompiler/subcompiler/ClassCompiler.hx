@@ -73,7 +73,6 @@ class ClassCompiler {
 
 		final body = new StringBuf();
 		final global = new StringBuf();
-		final ConstructorName = 'CreateInstance';
 
 		final staticVariables:Array<ClassVarData> = [];
 		final objectVariables:Array<ClassVarData> = [];
@@ -143,16 +142,10 @@ class ClassCompiler {
 			if (staticPrefixes.length > 0) {
 				body.add((staticPrefixes.join('\n') + '\n').tab());
 			}
-			body.add('return {\n'.tab());
-			body.add('__hx_name__: "${hxName}",\n'.tab().tab());
-			body.add('__hx_fields__: ${hxFieldsStr},\n'.tab().tab());
-			body.add('__hx_meta__: ${hxMetaStr},\n'.tab().tab());
+			body.add(createClassMeta(hxName, hxFieldsStr, hxMetaStr));
 			body.add('${statics.join(',\n')},\n'.tab().tab());
 		} else {
-			body.add('return {\n'.tab());
-			body.add('__hx_name__: "${hxName}",\n'.tab().tab());
-			body.add('__hx_fields__: ${hxFieldsStr},\n'.tab().tab());
-			body.add('__hx_meta__: ${hxMetaStr},\n'.tab().tab());
+			body.add(createClassMeta(hxName, hxFieldsStr, hxMetaStr));
 		}
 
 		if (staticFunctions.length > 0) {
@@ -167,18 +160,19 @@ class ClassCompiler {
 				final value = main.FComp.compileInstanceVarValue(v);
 				'$name: $value'.tab();
 			});
-			final instanceVarsStr = instanceVars.length > 0 ? (instanceVars.join(',\n') + ',\n') : '';
+			final instanceVarsStr =  instanceVars.length > 0 ? (instanceVars.join(',\n') + ',\n') : '';
 
-			instanceBody.push('constructor: ${createFunctionDefinition(constructor)}'.tab());
-			final instanceBodyStr = 'instance = {\n$instanceVarsStr${instanceBody.join(',\n\n')}\n}\n'.tab();
+			instanceBody.push('${Define.Constructor}: ${createFunctionDefinition(constructor)}'.tab());
+			final idGen = 'stri(Rnd(2147483647)) + stri(Rnd(2147483647))';
+			final instanceBodyStr = '${Define.Instance} = {\n${Define.InstanceId.tab()}: $idGen,\n$instanceVarsStr${instanceBody.join(',\n\n')}\n}\n'.tab();
 			final newFunction = switch constructor {
 				case null:
-					'$ConstructorName: ${Define.Function}() as Object\n$instanceBodyStr\n\treturn instance\n${Define.EndFunction}\n';
+					'${Define.CreateInstance}: ${Define.Function}() as Object\n$instanceBodyStr\n\treturn ${Define.Instance}\n${Define.EndFunction}\n';
 				case _:
 					final callParams = constructor.args.map(a -> a.getName()).join(', ');
-					final callNew = 'instance.__static__ = m\ninstance.constructor($callParams)'.tab();
-					final ret = 'return instance'.tab();
-					'$ConstructorName: ${createFunctionHeader(constructor, null, null, false, "a")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
+					final callNew = '${Define.Instance}.__static__ = m\n${Define.Instance}.${Define.Constructor}($callParams)'.tab();
+					final ret = 'return ${Define.Instance}'.tab();
+					'${Define.CreateInstance}: ${createFunctionHeader(constructor, null, null, false, "a")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
 			}
 			body.add(newFunction.tab().tab());
 		} else if (constructor != null) {
@@ -190,11 +184,12 @@ class ClassCompiler {
 			});
 			final instanceVarsStr = instanceVars.length > 0 ? (instanceVars.join(',\n') + ',\n') : '';
 			final callParams = constructor.args.map(a -> a.getName()).join(', ');
-			final constructorDef = 'constructor: ${createFunctionDefinition(constructor)}'.tab();
-			final instanceBodyStr = 'instance = {\n$instanceVarsStr$constructorDef\n}\n'.tab();
-			final callNew = 'instance.__static__ = m\ninstance.constructor($callParams)'.tab();
-			final ret = 'return instance'.tab();
-			final newFunction = '$ConstructorName: ${createFunctionHeader(constructor, null, null, false, "b")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
+			final constructorDef = '${Define.Constructor}: ${createFunctionDefinition(constructor)}'.tab();
+			final instanceBodyStr = '${Define.Instance} = {\n$instanceVarsStr$constructorDef\n}\n'.tab();
+			final callNew = '${Define.Instance}.__static__ = m\n${Define.Instance}.${Define.Constructor}($callParams)'.tab();
+			 
+			final ret = 'return ${Define.Instance}'.tab();
+			final newFunction = '${Define.CreateInstance}: ${createFunctionHeader(constructor, null, null, false, "b")}\n$instanceBodyStr\n$callNew\n$ret\n${Define.EndFunction}\n';
 			body.add(newFunction.tab().tab());
 		}
 
@@ -205,6 +200,15 @@ class ClassCompiler {
 		main.setExtraFile('${fullPath.join('/')}.brs', '$globalStr\n\n$classStr');
 
 		return '$globalStr\n\n$classStr';
+	}
+
+	function createClassMeta(hxName, hxFieldsStr, hxMetaStr):String{
+		final body = new StringBuf();
+		body.add('return {\n'.tab());
+		body.add('__hx_name__: "${hxName}",\n'.tab().tab());
+		body.add('__hx_fields__: ${hxFieldsStr},\n'.tab().tab());
+		body.add('__hx_meta__: ${hxMetaStr},\n'.tab().tab());
+		return body.toString();
 	}
 
 	function compileReturnType(f:ClassFuncData):String {
@@ -234,6 +238,7 @@ class ClassCompiler {
 	}
 
 	function createFunctionDefinition(f:ClassFuncData, inject:String = '', returnInstance = false) {
+
 		if (f == null) {
 			return null;
 		}
@@ -244,8 +249,16 @@ class ClassCompiler {
 		final functionHeader = createFunctionHeaderTyped(f, null, returnInstance ? ' as Object' : null);
 		final contextArgs = copyArgsToContext(f);
 		final functionBody = '\n$contextArgs\n$inject\n${main.compileClassFuncExpr(f.expr)}'.tab();
-		final returnInject = returnInstance ? '\treturn instance\n' : '';
-		return '$functionHeader$functionBody\n${returnInject}${Define.EndFunction}';
+		final returnInject = returnInstance ? '\treturn ${Define.Instance}\n' : '';
+		return '${debugClassFuncExpr(f.expr)}$functionHeader$functionBody\n${returnInject}${Define.EndFunction}';
+	}
+
+	function debugClassFuncExpr(expr: TypedExpr){
+		return '';
+		return switch expr.expr {
+			case TBlock(e): e.map(l -> l).join('\n');
+			case _: '__no debug';
+		}
 	}
 
 	function copyArgsToContext(f:ClassFuncData){

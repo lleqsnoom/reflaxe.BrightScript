@@ -43,65 +43,66 @@ class LanguageTests extends utest.Test {
 		Assert.equals(3, count);
 	}
 
-	// function testFloatToInt() {
-	// 	var f = 1.9;
-	// 	var i = f.int();
-	// 	Assert.equals(1, i);
-	// }
+	function testFloatToInt() {
+		var f = 1.9;
+		var i = f.int();
+		Assert.equals(1, i);
+	}
 
-	// function testVars() {
-	// 	counter++;
-	// 	arr.push(1);
-	// 	Assert.equals(1, counter);
-	// 	Assert.equals(1, arr.length);
-	// }
+	function testVars() {
+		counter++;
+		arr.push(1);
+		Assert.equals(1, counter);
+		Assert.equals(1, arr.length);
+	}
 
-	// function testStatics() {
-	// 	STATIC_COUNTER++;
-	// 	STATIC_ARR.push(100);
-	// 	Assert.equals(1, STATIC_COUNTER);
-	// 	Assert.equals(1, STATIC_ARR.length);
-	// }
+	function testStatics() {
+		STATIC_COUNTER++;
+		STATIC_ARR.push(100);
+		Assert.equals(1, STATIC_COUNTER);
+		Assert.equals(1, STATIC_ARR.length);
+	}
 
-	// function testEnum() {
-	// 	var color:Colors = Red;
-	// 	var name = "";
-	// 	switch color {
-	// 		case Red:
-	// 			name = "red";
-	// 		case Green:
-	// 			name = "green";
-	// 		case Blue:
-	// 			name = "blue";
-	// 	}
-	// 	Assert.equals("red", name);
-	// }
+	function testEnum() {
+		var color:Colors = Red;
+		var name = "";
+		switch color {
+			case Red:
+				name = "red";
+			case Green:
+				name = "green";
+			case Blue:
+				name = "blue";
+		}
+		Assert.equals("red", name);
+	}
 
-	// function testAbstractEnum() {
-	// 	var colorValue:ColorValues = Blue;
-	// 	var val:Int = colorValue;
-	// 	Assert.equals(255, val);
-	// }
+	function testAbstractEnum() {
+		var colorValue:ColorValues = Blue;
+		var val:Int = colorValue;
+		Assert.equals(255, val);
+	}
 
-	// function testArrow() {
-	// 	final add = (a:Int, b:Int) -> a + b;
-	// 	var result = add(1, 2);
-	// 	Assert.equals(3, result);
-	// }
+	function testArrow() {
+		final add = (a:Int, b:Int) -> a + b;
+		var result = add(1, 2);
+		Assert.equals(3, result);
+		Assert.equals(1, 3);
+	}
 
-	// function testTryCatch() {
-	// 	var caught = false;
-	// 	try {
-	// 		throw 'Error';
-	// 	} catch (e:Dynamic) {
-	// 		caught = true;
-	// 	}
-	// 	Assert.isTrue(caught);
-	// }
+	function testTryCatch() {
+		var caught = false;
+		try {
+			throw 'Error';
+		} catch (e:Dynamic) {
+			caught = true;
+		}
+		Assert.isTrue(caught);
+	}
 
-	// function testStringEscape() {
-	// 	var str = "Hello\nWorld";
-	// 	var len = str.length;
-	// 	Assert.isTrue(len > 0);
-	// }
+	function testStringEscape() {
+		var str = "Hello\nWorld";
+		var len = str.length;
+		Assert.isTrue(len > 0);
+	}
 }

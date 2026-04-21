@@ -126,12 +126,17 @@ class HttpTests {
 		// local variables, we verify via m (the caller AA) inside the callback.
 		var http = new haxe.Http("http://example.com");
 		Reflect.setField(http, "_errorMsg", "");
+		var errorMsg = "";
 		http.onError = function(msg:String) {
 			// When called as self.onError(msg), m refers to self (the http AA)
-			untyped __brs__('m._errorMsg = {0}', msg);
+			// untyped __brs__('m._errorMsg = {0}', msg);
+			errorMsg = msg;
 		};
+
+
+
 		http.request();
-		var errorMsg:String = Reflect.field(http, "_errorMsg");
+		// var errorMsg:String = Reflect.field(http, "_errorMsg");
 		var hasError = errorMsg != "";
 		t.isTrue(hasError, "request calls onError when roUrlTransfer unavailable");
 		t.stringEquals("roUrlTransfer not available", errorMsg, "error message correct");

@@ -42,8 +42,8 @@ class ExceptionTests {
 		var msg = "";
 		try {
 			throw new haxe.Exception("hello world");
-		} catch (e:haxe.Exception) {
-			msg = e.message;
+		} catch (error:haxe.Exception) {
+			msg = error.message;
 		}
 		t.stringEquals("hello world", msg, "Exception.message");
 	}

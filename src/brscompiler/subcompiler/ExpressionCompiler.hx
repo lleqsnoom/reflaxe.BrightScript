@@ -61,49 +61,49 @@ class ExpressionCompiler {
 	public function compileExpressionImpl(expr:TypedExpr, topLevel:Bool):Null<String> {
 		var result = new StringBuf();
 		switch (expr.expr) {
-			case TConst(TSuper): result.add(adl('TConst+TSuper') + compileSuperExpr(expr));
-			case TConst(constant): result.add(adl('TConst') + constantToBrightScript(constant));
-			case TLocal(v): result.add(adl('TLocal') + compileLocal(v, expr));
-			case TIdent(s): result.add(adl('TIdent') + main.compileVarName(s, expr));
+			case TConst(TSuper): result.addMulti(adl('TConst+TSuper'), compileSuperExpr(expr));
+			case TConst(constant): result.addMulti(adl('TConst'), constantToBrightScript(constant));
+			case TLocal(v): result.addMulti(adl('TLocal'), compileLocal(v, expr));
+			case TIdent(s): result.addMulti(adl('TIdent'), main.compileVarName(s, expr));
 			case TArray(e1, e2):
 				if (containsStatementExpr(e1)) {
 					final tmpName = '__tmp_${tempVarCounter++}';
 					final hoisted = compileIfAsAssignment(e1.unwrapParenthesis(), tmpName);
-					pendingPrefix.add(adl('TArray.1') + hoisted);
-					result.addMulti(adl('TArray.2') + tmpName, '[', main.compileExpressionOrError(e2), ']');
+					pendingPrefix.addMulti(adl('TArray.1'), hoisted);
+					result.addMulti(adl('TArray.2'), tmpName, '[', main.compileExpressionOrError(e2), ']');
 				} else {
-					result.addMulti(adl('TArray.3') + main.compileExpressionOrError(e1), '[', main.compileExpressionOrError(e2), ']');
+					result.addMulti(adl('TArray.3'), main.compileExpressionOrError(e1), '[', main.compileExpressionOrError(e2), ']');
 				}
-			case TBinop(OpAssign, {expr: TField(e1, FAnon(classFieldRef))}, e2): result.add(adl('TBinop+OpAssign') + compileAnonFieldAssign(e1, classFieldRef, e2));
-			case TBinop(op, e1, e2): result.add(adl('TBinop') + binopToBrightScript(op, e1, e2));
-			case TField(e, fa): result.add(adl('TField') + compileFieldExpr(e, fa, expr));
-			case TFunction(tfunc): result.add(adl('TFunction') + compileFunctionExpr(tfunc, expr));
-			case TTypeExpr(m): result.add(adl('TTypeExpr') + main.TComp.compileType(TypeHelper.fromModuleType(m), expr.pos) ?? 'Invalid !4!');
-			case TParenthesis(e): result.add(adl('TParenthesis') + compileParenthesis(e));
-			case TObjectDecl(fields): result.add(adl('TObjectDecl') + compileObjectDecl(fields));
-			case TArrayDecl(el): result.addMulti(adl('TArrayDecl') + '[', el.map(e -> main.compileExpression(e)).join(', '), ']');
-			case TCall(e, el): result.add(adl('TCall') + compileCallExpr(e, el, expr));
-			case TNew(classTypeRef, _, el): result.add(adl('TNew') + newToBrightScript(classTypeRef, expr, el));
-			case TUnop(op, postFix, e): result.add(adl('TUnop') + unopToBrightScript(op, e, postFix));
-			case TVar(tvar, maybeExpr): result.add(adl('TVar') + compileVarDecl(tvar, maybeExpr, expr));
-			case TBlock(el): result.add(adl('TBlock') + compileBlock(el, topLevel));
-			case TFor(tvar, iterExpr, blockExpr): result.add(adl('TFor') + compileFor(tvar, iterExpr, blockExpr));
-			case TIf(econd, ifExpr, elseExpr): result.add(adl('TIf') + compileIf(econd, ifExpr, elseExpr));
-			case TWhile(econd, blockExpr, normalWhile): result.add(adl('TWhile') + compileWhile(econd, blockExpr, normalWhile));
-			case TSwitch(e, cases, edef): result.add(adl('TSwitch') + switchToBrightScript(e, cases, edef, false));
-			case TTry(e, catches): result.add(adl('TTry') + compileTry(e, catches));
-			case TReturn(maybeExpr): result.add(adl('TReturn') + compileReturn(maybeExpr));
+			case TBinop(OpAssign, {expr: TField(e1, FAnon(classFieldRef))}, e2): result.addMulti(adl('TBinop+OpAssign'), compileAnonFieldAssign(e1, classFieldRef, e2));
+			case TBinop(op, e1, e2): result.addMulti(adl('TBinop'), binopToBrightScript(op, e1, e2));
+			case TField(e, fa): result.addMulti(adl('TField'), compileFieldExpr(e, fa, expr));
+			case TFunction(tfunc): result.addMulti(adl('TFunction'), compileFunctionExpr(tfunc, expr));
+			case TTypeExpr(m): result.addMulti(adl('TTypeExpr'), main.TComp.compileType(TypeHelper.fromModuleType(m), expr.pos) ?? 'Invalid !4!');
+			case TParenthesis(e): result.addMulti(adl('TParenthesis'), compileParenthesis(e));
+			case TObjectDecl(fields): result.addMulti(adl('TObjectDecl'), compileObjectDecl(fields));
+			case TArrayDecl(el): result.addMulti(adl('TArrayDecl'), '[', el.map(e -> main.compileExpression(e)).join(', '), ']');
+			case TCall(e, el): result.addMulti(adl('TCall'), compileCallExpr(e, el, expr));
+			case TNew(classTypeRef, _, el): result.addMulti(adl('TNew'), newToBrightScript(classTypeRef, expr, el));
+			case TUnop(op, postFix, e): result.addMulti(adl('TUnop'), unopToBrightScript(op, e, postFix));
+			case TVar(tvar, maybeExpr): result.addMulti(adl('TVar'), compileVarDecl(tvar, maybeExpr, expr));
+			case TBlock(el): result.addMulti(adl('TBlock'), compileBlock(el, topLevel));
+			case TFor(tvar, iterExpr, blockExpr): result.addMulti(adl('TFor'), compileFor(tvar, iterExpr, blockExpr));
+			case TIf(econd, ifExpr, elseExpr): result.addMulti(adl('TIf'), compileIf(econd, ifExpr, elseExpr));
+			case TWhile(econd, blockExpr, normalWhile): result.addMulti(adl('TWhile'), compileWhile(econd, blockExpr, normalWhile));
+			case TSwitch(e, cases, edef): result.addMulti(adl('TSwitch'), switchToBrightScript(e, cases, edef, false));
+			case TTry(e, catches): result.addMulti(adl('TTry'), compileTry(e, catches));
+			case TReturn(maybeExpr): result.addMulti(adl('TReturn'), compileReturn(maybeExpr));
 			case TBreak:
 				final loopKind = loopKindStack.length > 0 ? loopKindStack[loopKindStack.length - 1] : "while";
-				result.add(adl('TBreak') + 'exit $loopKind');
+				result.addMulti(adl('TBreak'), 'exit $loopKind');
 			case TContinue:
 				final loopKind = loopKindStack.length > 0 ? loopKindStack[loopKindStack.length - 1] : "while";
-				result.add(adl('TContinue') + 'continue $loopKind');
-			case TThrow(e): result.addMulti(adl('TThrow') + 'THROW ', main.compileExpressionOrError(e));
-			case TCast(e, maybeModuleType): result.add(adl('TCast') + compileCast(e, maybeModuleType));
-			case TMeta(_, e): result.add(adl('TMeta') + main.compileExpressionOrError(e));
-			case TEnumParameter(e, enumField, index): result.add(adl('TEnumParameter') + compileEnumParameter(e, enumField, index));
-			case TEnumIndex(e): result.add(adl('TEnumIndex') + compileEnumIndex(e));
+				result.addMulti(adl('TContinue'), 'continue $loopKind');
+			case TThrow(e): result.addMulti(adl('TThrow'), 'THROW ', main.compileExpressionOrError(e));
+			case TCast(e, maybeModuleType): result.addMulti(adl('TCast'), compileCast(e, maybeModuleType));
+			case TMeta(_, e): result.addMulti(adl('TMeta'), main.compileExpressionOrError(e));
+			case TEnumParameter(e, enumField, index): result.addMulti(adl('TEnumParameter'), compileEnumParameter(e, enumField, index));
+			case TEnumIndex(e): result.addMulti(adl('TEnumIndex'), compileEnumIndex(e));
 		}
 		// For top-level statements, drain any pending prefix into the output
 		if (topLevel) {
@@ -120,7 +120,9 @@ class ExpressionCompiler {
 		/**
 			TODO: solve closure like variables scope
 		**/
+		// final name = main.compileVarName(v.name, expr);
 		final name = Define.Ctx + '.' + main.compileVarName(v.name, expr);
+		// final name = Define.Ctx + '.' + main.compileVarName(v.name, expr) + '$v -> $expr';
 		return v.meta.maybeHas(':arrayWrap') ? '${name}[0]' : '${name}';
 	}
 
@@ -260,7 +262,7 @@ class ExpressionCompiler {
 		pendingPrefix.add(fnBuf.toString());
 
 		// Return the wrapper AA expression (single line)
-		return '{"__self": $selfVar, "call": $fnVar}';
+		return '{"__self": $selfVar, "${Define.Call}": $fnVar}';
 	}
 
 	function compileFunctionExpr(tfunc:TFunc, expr:TypedExpr):String {
@@ -268,8 +270,9 @@ class ExpressionCompiler {
 			TODO: Similar to closure
 		**/
 		final result = new StringBuf();
-		result.addMulti('${Define.Ctx}: ${Define.Ctx}\ncall: ');
+		result.addMulti('${Define.Ctx}: ${Define.Ctx}\n${Define.Call}: ');
 		result.addMulti(Define.Function, '(');
+		
 		tfunc.args.insert(0, {
 					v: {
 						isStatic: false,
@@ -299,7 +302,12 @@ class ExpressionCompiler {
 		if (type != null) {
 			result.addMulti(' as ', type);
 		}
+
 		result.add('\n');
+		for (i in 1...tfunc.args.length){
+			final argName = tfunc.args[i].v.name;
+			result.add('${Define.Ctx}.$argName = $argName\n');
+		}
 		result.add(toIndentedScope(tfunc.expr, true));
 		result.addMulti('\n', Define.EndFunction);
 		return '{\n${result.toString().tab()}\n}';
@@ -518,21 +526,21 @@ class ExpressionCompiler {
 			// Skip non-side-effectful bare expressions (BRS doesn't allow them as statements)
 			final skip = shouldSkipBareStatementExpr(el[i]);
 			if(isAnon){
-				trace('shouldSkipBareStatementExpr: $skip');
+				// trace('shouldSkipBareStatementExpr: $skip');
 			}
 			if (!skip) {
 				final compiled = main.compileExpression(el[i]);
 				if(isAnon){
-					trace('compiled: $compiled');
+					// trace('compiled: $compiled');
 				}
 				if (compiled != null) {
 					final statement = stripTrailingBareValueLine(compiled);
 					if (statement.trim().length > 0) results.push(statement);
 				}
 			}else{
-				trace('================= shouldSkipBareStatementExpr
-				${el[i]}
-				');
+				// trace('================= shouldSkipBareStatementExpr
+				// ${el[i]}
+				// ');
 
 			}
 			i++;
@@ -694,7 +702,11 @@ class ExpressionCompiler {
 		result.add(main.compileExpressionOrError(e).tab());
 		if (catches.length > 0) {
 			final c = catches[0];
-			result.addMulti('\nCATCH ', main.compileVarName(c.v.name, c.expr), '\n');
+			final catchName = main.compileVarName(c.v.name, c.expr);
+			// c.v.name += "DUUUPA";
+			// trace('\n\n===============> $catchName\n${c.v}\n${c.expr}');
+			result.addMulti('\nCATCH ', catchName, '\n');
+			result.addMulti(Define.Ctx, '.$catchName = $catchName\n');
 			result.add(main.compileExpressionOrError(c.expr).tab());
 		} else {
 			result.add('\nCATCH e\n');
@@ -867,8 +879,8 @@ class ExpressionCompiler {
 	function getExprType(te:Type) {
 		return switch (te) {
 			case TType(t, _): '$t';
-			case TAbstract(type, []):
-				switch type.get().type {
+			case TAbstract(t, []):
+				switch t.get().type {
 					case TAbstract(type, _):
 						switch type.get().name {
 							case 'String': 'String';
@@ -878,10 +890,17 @@ class ExpressionCompiler {
 							case 'Void': 'Void';
 							case _: getExprType(type.get().type);
 						}
-					case _: 'Unknown getExprType';
+					// case _: 'Object';
+					case _: 'TAbstract Unknown getExprType $te';
 				};
 			case TInst(cls, []): '$cls';
-			case _: 'Unknown getExprType';
+			case TInst(t, _): '$t';
+			case TDynamic(null): 'Unknown';
+			case TDynamic(t): 'Object';
+			case TAnonymous(_): 'Object';
+			case TAbstract(_, _): 'Object';
+			// case TAbstract(null, _): 'Object';
+			case _: '-- Unknown getExprType $te';
 		}
 	}
 
@@ -955,6 +974,15 @@ class ExpressionCompiler {
 			case _: OperatorHelper.binopToString(op);
 		};
 
+		if(op.isEqualityCheck()){
+			final isComplex1 = checkForComplexEquality(e1, expr1);
+			final isComplex2 = checkForComplexEquality(e2, expr2);
+			if(isComplex1 && isComplex2){
+				expr1 = '$expr1 <> invalid AND $expr2 <> invalid AND $expr1${Define.InstanceId}'; 
+				expr2 = '$expr2.${Define.InstanceId}';
+			}
+		}
+
 		if (op.isAddition()) {
 			if (checkForPrimitiveStringAddition(e1, e2, expr1, expr2))
 				expr2 = 'Str($expr2)';
@@ -963,6 +991,15 @@ class ExpressionCompiler {
 		}
 
 		return '$expr1 $operatorStr $expr2';
+	}
+
+
+	inline function checkForComplexEquality(expr:TypedExpr, str) {
+		if('$str' == 'invalid')
+			return false;
+
+		final strExprType = getExprType(expr.t);
+		return ['Dynamic', 'Object', 'Array'].contains(strExprType);
 	}
 
 	function padArgumentDefaults(arguments:Array<TypedExpr>, clsRef, cfRef):Array<TypedExpr> {
@@ -1296,9 +1333,9 @@ class ExpressionCompiler {
 	function toIndentedScope(e:TypedExpr, ?isAnon:Bool = false):String {
 		final result = new StringBuf();
 		if(isAnon){
-			trace('======= isAnon
-			${e}
-			');
+			// trace('======= isAnon
+			// ${e}
+			// ');
 		}
 		switch (e.expr) {
 			case TBlock(el):

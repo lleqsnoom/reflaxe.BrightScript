@@ -81,12 +81,11 @@ extern class Array<T> {
 	}
 
 	@:runtime public inline function sort(f:(T, T) -> Int):Void {
-		final cmp = f;
 		var n = length;
 		while (n > 1) {
 			var i = 0;
 			while (i < n - 1) {
-				if (cmp(get(i), get(i + 1)) > 0) {
+				if (f(get(i), get(i + 1)) > 0) {
 					var temp = get(i);
 					setAt(i, get(i + 1));
 					setAt(i + 1, temp);
@@ -213,18 +212,16 @@ extern class Array<T> {
 	}
 
 	@:runtime inline function map<S>(f:(T) -> S):Array<S> {
-		final temp = f;
 		final result = [];
 		for (v in this)
-			result.push(temp(v));
+			result.push(f(v));
 		return result;
 	}
 
 	@:runtime inline function filter(f:(T) -> Bool):Array<T> {
-		final temp = f;
 		final result = [];
 		for (v in this)
-			if (temp(v) == true)
+			if (f(v) == true)
 				result.push(v);
 		return result;
 	}

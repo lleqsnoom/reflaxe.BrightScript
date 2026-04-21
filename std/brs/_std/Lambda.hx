@@ -71,168 +71,159 @@ extern class Lambda {
 	return result;
 }
 
-@:keep @:brs_global function __Lambda_map__(it:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_map__(it:Dynamic, f:Dynamic):Dynamic {
+	var result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var mapped:Dynamic = untyped __brs__('{0}({1})', f, v);
-		brs.Native.push(result, mapped);
-		i = i + 1;
+		var v = brs.Native.arrayGet(it, i);
+		brs.Native.push(result, f(v));
+		i++;
 	}
 	return result;
 }
 
-@:keep @:brs_global function __Lambda_mapi__(it:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_mapi__(it:Dynamic, f:Dynamic):Dynamic {
+	final result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
 		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var mapped:Dynamic = untyped __brs__('{0}({1}, {2})', f, i, v);
-		brs.Native.push(result, mapped);
-		i = i + 1;
+		brs.Native.push(result, f(i, v));
+		i++;
 	}
 	return result;
 }
 
-@:keep @:brs_global function __Lambda_flatMap__(it:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_flatMap__(it:Dynamic, f:Dynamic):Dynamic {
+	final result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var inner:Dynamic = untyped __brs__('{0}({1})', f, v);
-		var innerCnt:Int = brs.Native.count(inner);
-		var j:Int = 0;
+		final v = brs.Native.arrayGet(it, i);
+		var inner = f(v);
+		var innerCnt = brs.Native.count(inner);
+		var j = 0;
 		while (j < innerCnt) {
 			brs.Native.push(result, brs.Native.arrayGet(inner, j));
-			j = j + 1;
+			j++;
 		}
-		i = i + 1;
+		i++;
 	}
 	return result;
 }
 
-@:keep @:brs_global function __Lambda_filter__(it:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_filter__(it:Dynamic, f:Dynamic):Dynamic {
+	var result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
 		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches == true)
+		if (f(v))
 			brs.Native.push(result, v);
 		i = i + 1;
 	}
 	return result;
 }
 
-@:keep @:brs_global function __Lambda_fold__(it:Dynamic, f:Dynamic, first:Dynamic):Dynamic {
-	var acc:Dynamic = first;
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_fold__(it:Dynamic, f:Dynamic, first:Dynamic):Dynamic {
+	var acc = first;
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
 		var v:Dynamic = brs.Native.arrayGet(it, i);
-		acc = untyped __brs__('{0}({1}, {2})', f, v, acc);
-		i = i + 1;
+		acc = f(v, acc);
+		i++;
 	}
 	return acc;
 }
 
-@:keep @:brs_global function __Lambda_foldi__(it:Dynamic, f:Dynamic, first:Dynamic):Dynamic {
-	var acc:Dynamic = first;
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_foldi__(it:Dynamic, f:Dynamic, first:Dynamic):Dynamic {
+	var acc = first;
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
 		var v:Dynamic = brs.Native.arrayGet(it, i);
-		acc = untyped __brs__('{0}({1}, {2}, {3})', f, v, acc, i);
-		i = i + 1;
+		acc = f(v, acc, i);
+		i++;
 	}
 	return acc;
 }
 
-@:keep @:brs_global function __Lambda_count__(it:Dynamic, pred:Dynamic):Int {
-	var n:Int = 0;
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
-	untyped __brs__('
-	if {0} <> invalid then
-		while {1} < {2}
-			v = {3}[{1}]
-			if {0}(v) = true then
-				{4} = {4} + 1
-			end if
-			{1} = {1} + 1
-		end while
-	else
-		{4} = {2}
-	end if', pred, i, cnt, it, n);
-	return n;
+@:keep @:brs_global inline function __Lambda_count__(it:Dynamic, pred:Dynamic):Int {
+	var n = 0;
+	var cnt = brs.Native.count(it);
+	var i = 0;
+	
+	return if(pred == null){
+		cnt;
+	} else {
+		while (i < cnt){
+			if (pred(it[i]))
+				n++;
+			i++;
+		}
+		n;
+	}
 }
 
-@:keep @:brs_global function __Lambda_find__(it:Dynamic, f:Dynamic):Dynamic {
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_find__(it:Dynamic, f:Dynamic):Dynamic {
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches == true)
+		var v = brs.Native.arrayGet(it, i);
+		if (f(v))
 			return v;
-		i = i + 1;
+		i++;
 	}
-	return untyped __brs__('invalid');
+	return brs.Native.invalid();
 }
 
-@:keep @:brs_global function __Lambda_findIndex__(it:Dynamic, f:Dynamic):Int {
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_findIndex__(it:Dynamic, f:Dynamic):Int {
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches == true)
+		var v = brs.Native.arrayGet(it, i);
+		if (f(v))
 			return i;
-		i = i + 1;
+		i++;
 	}
 	return -1;
 }
 
-@:keep @:brs_global function __Lambda_exists__(it:Dynamic, f:Dynamic):Dynamic {
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_exists__(it:Dynamic, f:Dynamic):Dynamic {
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches == true)
+		var v = brs.Native.arrayGet(it, i);
+		if (f(v))
 			return untyped __brs__('true');
-		i = i + 1;
+		i++;
 	}
 	return untyped __brs__('false');
 }
 
-@:keep @:brs_global function __Lambda_foreach__(it:Dynamic, f:Dynamic):Dynamic {
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+@:keep @:brs_global inline function __Lambda_foreach__(it:Dynamic, f:Dynamic):Dynamic {
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(it, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches != true)
+		var v = brs.Native.arrayGet(it, i);
+		if (f(v) != true)
 			return untyped __brs__('false');
-		i = i + 1;
+		i++;
 	}
 	return untyped __brs__('true');
 }
 
 @:keep @:brs_global function __Lambda_iter__(it:Dynamic, f:Dynamic):Dynamic {
-	var cnt:Int = brs.Native.count(it);
-	var i:Int = 0;
+	var cnt = brs.Native.count(it);
+	var i = 0;
 	while (i < cnt) {
 		var v:Dynamic = brs.Native.arrayGet(it, i);
-		untyped __brs__('{0}({1})', f, v);
-		i = i + 1;
+		f(v);
+		i++;
 	}
-	return untyped __brs__('invalid');
+	return brs.Native.invalid();
 }
 
 @:keep @:brs_global function __Lambda_empty__(it:Dynamic):Dynamic {

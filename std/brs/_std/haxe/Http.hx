@@ -122,7 +122,7 @@ private extern class BrsHttp {
 			__h_ut = invalid
 		end try
 		if __h_ut = invalid then
-			if {0}.onError <> invalid then {0}.onError("roUrlTransfer not available")
+			if {0}.onError <> invalid then {0}.onError.call({0}.onError._ctx_, "roUrlTransfer not available")
 		else
 			__h_ut.SetUrl(__h_url)
 			if Left(__h_url, 5) = "https" then

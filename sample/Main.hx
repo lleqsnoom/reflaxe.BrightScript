@@ -13,32 +13,36 @@ class Main {
 	}
 
 	public function new() {
-		new LanguageTests(this).run();
 		new ArrayTests(this).run();
 		new StringTests(this).run();
 		new MathTests(this).run();
-		new StringBufTests(this).run();
 		new StringToolsTests(this).run();
-		new MapTests(this).run();
-		new DateTests(this).run();
-		new DateToolsTests(this).run();
-		new ERegTests(this).run();
-		new ReflectTests(this).run();
-		new TypeTests(this).run();
-		new LambdaTests(this).run();
-		new ListTests(this).run();
+
+
 		new XmlTests(this).run();
-		new ExceptionTests(this).run();
 		new JsonTests(this).run();
 		new JsonPrinterTests(this).run();
 		new BytesTests(this).run();
-		new TimerTests(this).run();
 		new SerializerTests(this).run();
-		new HttpTests(this).run();
 		new CryptoTests(this).run();
 		new CallStackTests(this).run();
 		new MetaTests(this).run();
 		new SysTests(this).run();
+
+		new LanguageTests(this).run();
+		
+		new MapTests(this).run();
+		new DateTests(this).run();
+		new DateToolsTests(this).run();
+		new TimerTests(this).run();
+		new ReflectTests(this).run();
+		new LambdaTests(this).run();
+		new TypeTests(this).run();
+		new ListTests(this).run();
+		new ERegTests(this).run();
+		new StringBufTests(this).run();
+		new ExceptionTests(this).run();
+		new HttpTests(this).run();
 		report();
 	}
 
@@ -46,7 +50,7 @@ class Main {
 
 	public function section(name:String):Void {
 		_section = name;
-		trace("---- " + name + " ----");
+		Sys.println('TESTING -> $name: Success');
 	}
 
 	public function isTrue(actual:Dynamic, msg:String):Void {
@@ -54,7 +58,7 @@ class Main {
 			_passed++;
 		else {
 			_failed++;
-			trace("[FAIL] " + _section + " > " + msg);
+			Sys.println("[FAIL] " + _section + " > " + msg);
 		}
 	}
 
@@ -63,7 +67,7 @@ class Main {
 			_passed++;
 		else {
 			_failed++;
-			trace("[FAIL] " + _section + " > " + msg + " (expected false)");
+			Sys.println("[FAIL] " + _section + " > " + msg + " (expected false)");
 		}
 	}
 
@@ -72,7 +76,7 @@ class Main {
 			_passed++;
 		else {
 			_failed++;
-			trace("[FAIL] " + _section + " > " + msg + " | expected: '" + expected + "' | got: '" + actual + "'");
+			Sys.println("[FAIL] " + _section + " > " + msg + " | expected: '" + expected + "' | got: '" + actual + "'");
 		}
 	}
 
@@ -81,7 +85,7 @@ class Main {
 			_passed++;
 		else {
 			_failed++;
-			trace("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
+			Sys.println("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
 		}
 	}
 
@@ -93,19 +97,19 @@ class Main {
 			_passed++;
 		else {
 			_failed++;
-			trace("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
+			Sys.println("[FAIL] " + _section + " > " + msg + " | expected " + expected + ", got " + actual);
 		}
 	}
 
 	public function report():Void {
 		var total = _passed + _failed;
-		trace("==========================================");
-		trace("TEST RESULTS: " + _passed + "/" + total + " passed");
+		Sys.println("==========================================");
+		Sys.println("TEST RESULTS: " + _passed + "/" + total + " passed");
 		if (_failed > 0)
-			trace("FAILURES: " + _failed);
+			Sys.println("FAILURES: " + _failed);
 		else
-			trace("ALL TESTS PASSED");
-		trace("==========================================");
+			Sys.println("ALL TESTS PASSED");
+		Sys.println("==========================================");
 	}
 }
 

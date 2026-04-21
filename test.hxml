@@ -6,4 +6,4 @@
 -D travis
 -D brightscript-output=out/test_amalgam.brs
 -D brs_runtime
--D UTEST_PRINT_TESTS
+# -D UTEST_PRINT_TESTS

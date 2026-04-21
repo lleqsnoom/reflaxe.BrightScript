@@ -15,6 +15,9 @@ extern class Native {
 	@:nativeFunctionCode("({arg0} = {arg1})")
 	public static function eq(a:Dynamic, b:Dynamic):Bool;
 
+	@:nativeFunctionCode("({arg0} <> {arg1})")
+	public static function neq(a:Dynamic, b:Dynamic):Bool;
+
 	@:nativeFunctionCode("invalid")
 	public static function invalid():Dynamic;
 

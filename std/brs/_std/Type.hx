@@ -100,6 +100,7 @@ private extern class BrsType {
 			if {0}.DoesExist("__static__") then return {"_index": 6, "c": invalid}
 			return {"_index": 7, "e": invalid}
 		end if
+		if {0}.DoesExist("call") AND {0}.DoesExist("_ctx_") then return {"_index": 5}
 		if {0}.DoesExist("__static__") then return {"_index": 6, "c": invalid}
 		return {"_index": 4}
 	end if

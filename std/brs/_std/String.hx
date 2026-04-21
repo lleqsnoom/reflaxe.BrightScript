@@ -1,7 +1,7 @@
 package;
 
 extern class String {
-	@:nativeFunctionCode("{this}.Len()")
+	@:nativeFunctionCode("Len({this})")
 	var length(default, null):Int;
 
 	@:nativeFunctionCode("{arg0}")
@@ -47,10 +47,10 @@ extern class String {
 		return found;
 	}
 
-	@:nativeFunctionCode("{this}.Len()")
+	@:nativeFunctionCode("Len({this})")
 	private function brsLength():Int;
 
-	@:nativeFunctionCode("{arg0}.Len()")
+	@:nativeFunctionCode("Len({arg0})")
 	private function brsLen(s:String):Int;
 
 	@:nativeFunctionCode("{this}.Split({arg0})")

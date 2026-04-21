@@ -48,7 +48,7 @@ extern class Timer {
 @:keep @:brs_global function __Timer_measure__(f:Dynamic, pos:Dynamic):Dynamic {
 	untyped __brs__('
 		__tm_t0 = __Timer_stamp__()
-		__tm_result = __callFn0__({0})
+		__tm_result = __callFn0__({2}, {0})
 		__tm_t1 = __Timer_stamp__()
 		__tm_diff = __tm_t1 - __tm_t0
 		if {1} <> invalid then
@@ -56,6 +56,6 @@ extern class Timer {
 		else
 			Print Str(__tm_diff).Trim(); "s"
 		end if
-	', f, pos);
+	', f, pos, Define.Ctx);
 	return untyped __brs__('__tm_result');
 }

@@ -31,7 +31,7 @@ class BRSCompilerInit {
 				RemoveSingleExpressionBlocks,
 				RemoveConstantBoolIfs,
 				RemoveUnnecessaryBlocks,
-				RemoveReassignedVariableDeclarations,
+				// RemoveReassignedVariableDeclarations,
 				RemoveLocalVariableAliases,
 				MarkUnusedVariables,
 			],

@@ -126,29 +126,27 @@ extern class ListKeyValueIterator<T> {
 	return untyped __brs__('false');
 }
 
-@:keep @:brs_global function __List_map__(self:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(self);
-	var i:Int = 0;
+@:keep @:brs_global inline function __List_map__(self:Dynamic, f:Dynamic):Dynamic {
+	var result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(self);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(self, i);
-		var mapped:Dynamic = untyped __brs__('{0}({1})', f, v);
-		brs.Native.push(result, mapped);
-		i = i + 1;
+		var v = brs.Native.arrayGet(self, i);
+		brs.Native.push(result, f(v));
+		i++;
 	}
 	return result;
 }
 
-@:keep @:brs_global function __List_filter__(self:Dynamic, f:Dynamic):Dynamic {
-	var result:Dynamic = brs.Native.emptyArray();
-	var cnt:Int = brs.Native.count(self);
-	var i:Int = 0;
+@:keep @:brs_global inline function __List_filter__(self:Dynamic, f:Dynamic):Dynamic {
+	var result = brs.Native.emptyArray();
+	var cnt = brs.Native.count(self);
+	var i = 0;
 	while (i < cnt) {
-		var v:Dynamic = brs.Native.arrayGet(self, i);
-		var matches:Dynamic = untyped __brs__('{0}({1})', f, v);
-		if (matches == true)
+		var v = brs.Native.arrayGet(self, i);
+		if (f(v) == true)
 			brs.Native.push(result, v);
-		i = i + 1;
+		i++;
 	}
 	return result;
 }

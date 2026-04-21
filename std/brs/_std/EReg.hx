@@ -149,7 +149,7 @@ extern class EReg {
 }
 
 // Map: call callback for each match. Sets internal state so matched() etc. work in callback.
-@:keep @:brs_global function __EReg_map__(self:Dynamic, s:String, f:Dynamic):String {
+@:keep @:brs_global inline function __EReg_map__(self:Dynamic, s:String, f:Dynamic):String {
 	var mk = brs.Native.chr(1);
 	var isGlobal:Bool = untyped __brs__('{0}.g', self);
 	if (isGlobal == true) {
@@ -171,7 +171,7 @@ extern class EReg {
 				untyped __brs__('{0}.fm = {1}', self, fm);
 				untyped __brs__('{0}.pos = {1}', self, p1);
 				untyped __brs__('{0}.ok = true', self);
-				var cb:String = untyped __brs__('{0}({1})', f, self);
+				var cb:String = f(self);//untyped __brs__('{0}({1})', f, self);
 				var leftPart = brs.Native.left(remaining, p1);
 				mapResult = mapResult + leftPart + cb;
 				var ml = fm.length;
@@ -197,14 +197,14 @@ extern class EReg {
 		var marked:String = untyped __brs__('{0}.r.Replace({1}, {2})', self, s, replacement);
 		var p1 = brs.Native.instr(marked, mk);
 		var p2 = brs.Native.instrFrom(p1 + 1, marked, mk);
-		var fm = brs.Native.mid(marked, p1 + 1, p2 - p1 - 1);
+		var fm:String = brs.Native.mid(marked, p1 + 1, p2 - p1 - 1);
 		untyped __brs__('{0}.s = {1}', self, s);
 		untyped __brs__('{0}.ms = {1}', self, s);
 		untyped __brs__('{0}.fm = {1}', self, fm);
 		untyped __brs__('{0}.pos = {1}', self, p1);
 		untyped __brs__('{0}.ok = true', self);
 		var ml = fm.length;
-		var cb:String = untyped __brs__('{0}({1})', f, self);
+		var cb:String = f(self);
 		var leftPart = brs.Native.left(s, p1);
 		var rightPart = brs.Native.midFrom(s, p1 + ml);
 		return leftPart + cb + rightPart;
